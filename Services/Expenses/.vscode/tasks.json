@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/Budget.csproj"
+                "${workspaceFolder}/Expenses.sln"
             ],
             "problemMatcher": "$msCompile",
             "group": {
