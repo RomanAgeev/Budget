@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Expenses.Api.Queries;
 using Guards;
@@ -17,6 +18,7 @@ namespace Expenses.Api.Controllers {
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetExpensesAsync() {
             IEnumerable<ExpenseViewModel> expenses = await _expenseQueries.GetExpensesAsync();
 
