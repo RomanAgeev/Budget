@@ -1,13 +1,20 @@
 using System;
+using Expenses.Domain.Common;
 
 namespace Expenses.Domain.Models {
-    public class Expense {
-        public int ExpenseId { get; set; }
-        public decimal Amount { get; set; }
-        public string Description { get; set; }
-        public DateTime Date { get; set; }
-        
-        public int CategoryId { get; set; }
-        public ExpenseCategory Category { get; set; }
+    public class Expense : Entity {
+        public Expense(DateTime date, decimal amount, string description) {
+            _date = date;
+            _amount = amount;
+            _description = description;
+        }
+
+        DateTime _date;
+        decimal _amount;
+        string _description;
+
+        public DateTime Date => _date;
+        public decimal Amount => _amount;
+        public string Description => _description;
     }
 }

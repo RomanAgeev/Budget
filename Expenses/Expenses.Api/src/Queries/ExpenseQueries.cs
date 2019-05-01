@@ -23,9 +23,9 @@ namespace Expenses.Api.Queries {
 
                 return await connection.QueryAsync<ExpenseViewModel>(@"
                     SELECT e.Description, c.Name Category, e.Date, e.Amount
-                    FROM Expense e
-                    INNER JOIN ExpenseCategory c
-                    ON e.CategoryId = c.ExpenseCategoryId");
+                    FROM expenses e
+                    INNER JOIN expense_categories c
+                    ON e.ExpenseCategoryId = c.Id");
             }
         }
     }

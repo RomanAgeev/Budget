@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Expenses.Infrastructure.Migrations
 {
     [DbContext(typeof(ExpenseContext))]
-    [Migration("20190428211122_Seed")]
-    partial class Seed
+    [Migration("20190501030532_create_database")]
+    partial class create_database
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,53 +21,53 @@ namespace Expenses.Infrastructure.Migrations
 
             modelBuilder.Entity("Expenses.Domain.Models.Expense", b =>
                 {
-                    b.Property<int>("ExpenseId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<decimal>("Amount");
-
-                    b.Property<int>("CategoryId");
 
                     b.Property<DateTime>("Date");
 
                     b.Property<string>("Description");
 
-                    b.HasKey("ExpenseId");
+                    b.Property<int>("ExpenseCategoryId");
 
-                    b.HasIndex("CategoryId");
+                    b.HasKey("Id");
 
-                    b.ToTable("Expense");
+                    b.HasIndex("ExpenseCategoryId");
+
+                    b.ToTable("expenses");
 
                     b.HasData(
                         new
                         {
-                            ExpenseId = 1,
+                            Id = 1,
                             Amount = 60m,
-                            CategoryId = 1,
                             Date = new DateTime(2019, 4, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Weekly food shopping in the \"Shop & Go\""
+                            Description = "Weekly food shopping in the \"Shop & Go\"",
+                            ExpenseCategoryId = 1
                         },
                         new
                         {
-                            ExpenseId = 2,
+                            Id = 2,
                             Amount = 40m,
-                            CategoryId = 1,
                             Date = new DateTime(2019, 4, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Weekly food shopping in the \"Shop & Go\""
+                            Description = "Weekly food shopping in the \"Shop & Go\"",
+                            ExpenseCategoryId = 1
                         },
                         new
                         {
-                            ExpenseId = 3,
+                            Id = 3,
                             Amount = 35m,
-                            CategoryId = 2,
                             Date = new DateTime(2019, 4, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "Fillup a fool tank of Ford"
+                            Description = "Fillup a fool tank of Ford",
+                            ExpenseCategoryId = 2
                         });
                 });
 
             modelBuilder.Entity("Expenses.Domain.Models.ExpenseCategory", b =>
                 {
-                    b.Property<int>("ExpenseCategoryId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Description");
@@ -75,20 +75,20 @@ namespace Expenses.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .IsRequired();
 
-                    b.HasKey("ExpenseCategoryId");
+                    b.HasKey("Id");
 
-                    b.ToTable("ExpenseCategory");
+                    b.ToTable("expense_categories");
 
                     b.HasData(
                         new
                         {
-                            ExpenseCategoryId = 1,
+                            Id = 1,
                             Description = "Everyday food and drink expenses",
                             Name = "Food"
                         },
                         new
                         {
-                            ExpenseCategoryId = 2,
+                            Id = 2,
                             Description = "Total petrol expenses for each car",
                             Name = "Petrol"
                         });
@@ -96,9 +96,9 @@ namespace Expenses.Infrastructure.Migrations
 
             modelBuilder.Entity("Expenses.Domain.Models.Expense", b =>
                 {
-                    b.HasOne("Expenses.Domain.Models.ExpenseCategory", "Category")
+                    b.HasOne("Expenses.Domain.Models.ExpenseCategory")
                         .WithMany("Expenses")
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("ExpenseCategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618
