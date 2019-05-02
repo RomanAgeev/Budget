@@ -39,7 +39,7 @@ namespace Expenses.Api {
 
             string connectionString = Configuration.GetConnectionString("ExpensesConnection");
             services.AddDbContext<ExpenseContext>(options => options.UseMySql(connectionString));
-            services.AddSingleton<DbConnectionFactory>(() => new MySqlConnection(connectionString));
+            services.For<DbConnectionFactory>().Use(() => new MySqlConnection(connectionString));
             
             services.Scan(it => {
                 it.TheCallingAssembly();
