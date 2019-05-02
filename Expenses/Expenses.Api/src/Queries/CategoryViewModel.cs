@@ -1,5 +1,5 @@
 namespace Expenses.Api.Queries {
-    public class ExpenseCategoryViewModel {
+    public class CategoryViewModel {
         public string Name { get; set; }
         public string Description { get; set; }
     }

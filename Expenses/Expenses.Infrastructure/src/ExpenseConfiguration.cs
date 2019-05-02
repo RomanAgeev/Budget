@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Expenses.Infrastructure {
     public class ExpenseConfiguration : IEntityTypeConfiguration<Expense> {
         public void Configure(EntityTypeBuilder<Expense> builder) {
-            builder.ToTable("expenses");
+            builder.ToTable("Expense");
 
             builder.HasKey(it => it.Id);
 
@@ -14,7 +14,7 @@ namespace Expenses.Infrastructure {
             builder.Property<decimal>(it => it.Amount).IsRequired();
             builder.Property<string>(it => it.Description);
 
-            builder.Property<int>("ExpenseCategoryId").IsRequired();
+            builder.Property<int>("CategoryId").IsRequired();
         }
     }
 }

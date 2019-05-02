@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Expenses.Infrastructure {
-    public class ExpenseCategoryConfiguration : IEntityTypeConfiguration<ExpenseCategory> {
-        public void Configure(EntityTypeBuilder<ExpenseCategory> builder) {
-            builder.ToTable("expense_categories");
+    public class CategoryConfiguration : IEntityTypeConfiguration<Category> {
+        public void Configure(EntityTypeBuilder<Category> builder) {
+            builder.ToTable("Category");
 
             builder.HasKey(it => it.Id);
 
@@ -13,7 +13,7 @@ namespace Expenses.Infrastructure {
             builder.Property<string>(it => it.Description);
 
             builder.Metadata
-                .FindNavigation(nameof(ExpenseCategory.Expenses))
+                .FindNavigation(nameof(Category.Expenses))
                 .SetPropertyAccessMode(PropertyAccessMode.Field);
         }
     }

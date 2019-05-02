@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Expenses.Domain.Common;
 
 namespace Expenses.Domain.Models {
-    public class ExpenseCategory : Entity, IAggregateRoot {
-        public ExpenseCategory(string name, string description) {
+    public class Category : Entity, IAggregateRoot {
+        public Category(string name, string description) {
             _name = name;
             _description = description;
         }

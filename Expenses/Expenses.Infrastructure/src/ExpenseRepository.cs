@@ -14,10 +14,10 @@ namespace Expenses.Infrastructure {
 
         public IUnitOfWork UnitOfWork => _context;
 
-        public void AddExpenseCategory(ExpenseCategory category) {
+        public void AddCategory(Category category) {
             Guard.NotNull(category, nameof(category));
 
-            _context.ExpenseCategories.Add(category);
+            _context.Categories.Add(category);
         }
     }
 }
