@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="RA_Guards" Version="1.0.0-release" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Expenses.Domain\Expenses.Domain.csproj" />
   </ItemGroup>
 

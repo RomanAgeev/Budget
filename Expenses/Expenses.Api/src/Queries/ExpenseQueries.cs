@@ -17,6 +17,16 @@ namespace Expenses.Api.Queries {
             _connectionFactory = connectionFactory;
         }
 
+        public async Task<IEnumerable<ExpenseCategoryViewModel>> GetExpenseCategoriesAsync() {
+            using(DbConnection connection = _connectionFactory()) {
+                connection.Open();
+
+                return await connection.QueryAsync<ExpenseCategoryViewModel>(@"
+                    SELECT Name, Description
+                    FROM expense_categories");
+            }
+        }
+
         public async Task<IEnumerable<ExpenseViewModel>> GetExpensesAsync() {
             using(DbConnection connection = _connectionFactory()) {
                 connection.Open();

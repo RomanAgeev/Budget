@@ -38,16 +38,19 @@ namespace Expenses.Api {
             });
 
             string connectionString = Configuration.GetConnectionString("ExpensesConnection");
+
             services.AddDbContext<ExpenseContext>(options => options.UseMySql(connectionString));
-            services.For<DbConnectionFactory>().Use(() => new MySqlConnection(connectionString));
             
             services.Scan(it => {
                 it.TheCallingAssembly();
+                it.AssemblyContainingType<Expenses.Domain.IAssemblyFinder>();
+                it.AssemblyContainingType<Expenses.Infrastructure.IAssemblyFinder>();
                 it.WithDefaultConventions();
                 it.ConnectImplementationsToTypesClosing(typeof(IRequestHandler<,>));
                 it.ConnectImplementationsToTypesClosing(typeof(INotificationHandler<>));
             });
 
+            services.For<DbConnectionFactory>().Use(() => new MySqlConnection(connectionString));
             services.For<ServiceFactory>().Use(ctx => ctx.GetInstance);
             services.For<IMediator>().Use<Mediator>();
         }
