@@ -18,6 +18,10 @@ namespace Expenses.Api {
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseLamar()
+                .ConfigureLogging(it => {
+                    it.ClearProviders();
+                    it.AddConsole();
+                })
                 .UseStartup<Startup>();
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using Expenses.Api.Commands;
 using Expenses.Api.Queries;
 using Expenses.Infrastructure;
 using FluentValidation;
@@ -58,6 +59,8 @@ namespace Expenses.Api {
             services.For<DbConnectionFactory>().Use(() => new MySqlConnection(connectionString));
             services.For<ServiceFactory>().Use(ctx => ctx.GetInstance);
             services.For<IMediator>().Use<Mediator>();
+
+            services.For(typeof(IPipelineBehavior<,>)).Use(typeof(LoggingBehavior<,>));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
