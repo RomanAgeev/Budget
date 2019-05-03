@@ -32,6 +32,7 @@ namespace Expenses.Api.Controllers {
 
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateExpenseCategory(CreateCategoryCommand command) {
             bool success = await _mediator.Send(command);
             if(success)
