@@ -1,5 +1,4 @@
 using System;
-using Expenses.Domain.Common;
 
 namespace Expenses.Domain.Models {
     public class Expense : Entity {

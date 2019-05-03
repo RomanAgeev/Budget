@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Expenses.Domain;
 using Expenses.Domain.Models;
 using Guards;
@@ -14,6 +15,9 @@ namespace Expenses.Infrastructure {
 
         public IUnitOfWork UnitOfWork => _context;
 
+        public IEnumerable<Category> GetCategories() {
+            return _context.Categories;
+        }
         public void AddCategory(Category category) {
             Guard.NotNull(category, nameof(category));
 

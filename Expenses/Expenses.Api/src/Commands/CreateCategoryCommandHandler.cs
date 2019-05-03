@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Expenses.Domain;
@@ -16,6 +17,14 @@ namespace Expenses.Api.Commands {
         readonly IExpenseRepository _repository;
 
         public async Task<bool> Handle(CreateCategoryCommand command, CancellationToken cancellationToken) {
+            bool duplicatedCategoryName = _repository.GetCategories().Any(it => it.Name == command.Name);
+            if(duplicatedCategoryName)
+                throw new DomainException(
+                    cause: DomainExceptionCause.DuplicatedCategoryName, 
+                    message: $"Category with the name '{command.Name}' already exists"
+                );
+
+            
             var category = new Category(command.Name, command.Description);
 
             _repository.AddCategory(category);

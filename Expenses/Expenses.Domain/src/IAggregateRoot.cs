@@ -1,4 +1,4 @@
-namespace Expenses.Domain.Common {
+namespace Expenses.Domain {
     public interface IAggregateRoot {        
     }
 }

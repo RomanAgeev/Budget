@@ -4,10 +4,10 @@ using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Expenses.Api.Behaviors;
+using Expenses.Api.Middleware;
 using Expenses.Api.Queries;
 using Expenses.Infrastructure;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Lamar;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -31,9 +31,7 @@ namespace Expenses.Api {
         public IConfiguration Configuration { get; }
 
         public void ConfigureContainer(ServiceRegistry services) {
-            services.AddMvc()
-                .AddFluentValidation()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(it => {
                 it.SwaggerDoc("v1", new Info { 
@@ -61,6 +59,7 @@ namespace Expenses.Api {
             services.For<IMediator>().Use<Mediator>();
 
             services.For(typeof(IPipelineBehavior<,>)).Use(typeof(LoggingBehavior<,>));
+            services.For(typeof(IPipelineBehavior<,>)).Use(typeof(ValidationBehavior<,>));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
@@ -68,6 +67,8 @@ namespace Expenses.Api {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+            
             app.UseMvc();
 
             app.UseSwagger().UseSwaggerUI(it => {

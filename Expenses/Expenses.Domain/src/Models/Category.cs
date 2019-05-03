@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Expenses.Domain.Common;
 
 namespace Expenses.Domain.Models {
     public class Category : Entity, IAggregateRoot {

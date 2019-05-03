@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Expenses.Api.Commands;
+using Expenses.Api.Middleware;
 using Expenses.Api.Queries;
 using Guards;
 using MediatR;
@@ -32,12 +33,11 @@ namespace Expenses.Api.Controllers {
 
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.Created)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateExpenseCategory(CreateCategoryCommand command) {
-            bool success = await _mediator.Send(command);
-            if(success)
-                return Created("", "");
-            return BadRequest();
+            await _mediator.Send(command);
+
+            return Created("", "");
         }
     }
 }
