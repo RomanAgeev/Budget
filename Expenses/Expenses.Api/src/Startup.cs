@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
-using Expenses.Api.Commands;
+using Expenses.Api.Behaviors;
 using Expenses.Api.Queries;
 using Expenses.Infrastructure;
 using FluentValidation;

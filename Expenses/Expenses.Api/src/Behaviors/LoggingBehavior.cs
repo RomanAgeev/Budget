@@ -4,7 +4,7 @@ using Guards;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace Expenses.Api.Commands {
+namespace Expenses.Api.Behaviors {
     public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> {
         public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger) {
             Guard.NotNull(logger, nameof(logger));
