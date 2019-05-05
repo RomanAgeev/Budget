@@ -1,7 +1,7 @@
 using System;
 using Guards;
 
-namespace Expenses.Domain {
+namespace Expenses.Domain.Models {
     public abstract class Entity {
         int _id;
 
@@ -31,7 +31,7 @@ namespace Expenses.Domain {
             return Id == ((Entity)obj).Id;
         }
 
-        public override int GetHashCode() {            
+        public override int GetHashCode() {
             return IsTransient ? 0 : Id.GetHashCode() ^ 31;
         }
 

@@ -15,37 +15,6 @@ namespace Expenses.Domain.Tests {
         }
 
         [Fact]
-        public void WithIdTest() {
-            var category = new Category("category", null);
-
-            category.Id.Should().Be(0);
-
-            category.WithId(1);
-
-            category.Id.Should().Be(1);
-        }
-
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(0)]
-        public void WithWrongId(int id) {
-             var category = new Category("category", null);
-
-             category.Invoking(it => it.WithId(id))
-                .Should().Throw<ArgumentException>();
-        }
-
-        [Fact]
-        public void WithIdMoreThanOnceTest() {
-            var category = new Category("category", null);
-
-            category = category.WithId(1);
-
-            category.Invoking(it => it.WithId(2))
-                .Should().Throw<InvalidOperationException>();
-        }
-
-        [Fact]
         public void UpdateTest() {
             var category = new Category("category", "category_description");
 

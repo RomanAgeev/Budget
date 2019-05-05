@@ -1,8 +1,11 @@
 using System;
+using Guards;
 
 namespace Expenses.Domain.Models {
     public class Expense : Entity {
         public Expense(DateTime date, decimal amount, string description) {
+            Guard.NotZeroOrNegative(amount, nameof(amount));
+
             _date = date;
             _amount = amount;
             _description = description;
@@ -22,6 +25,8 @@ namespace Expenses.Domain.Models {
         }
 
         public void Update(decimal amount, string description) {
+            Guard.NotZeroOrNegative(amount, nameof(amount));
+            
             _amount = amount;
             _description = description;
         }
