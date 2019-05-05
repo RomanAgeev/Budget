@@ -6,6 +6,8 @@ namespace Expenses.Domain {
         IUnitOfWork UnitOfWork { get; }
 
         IEnumerable<Category> GetCategories();
+        Category GetCategory(int categoryId);
         void AddCategory(Category category);
+        void DeleteCategory(Category category);
     }
 }

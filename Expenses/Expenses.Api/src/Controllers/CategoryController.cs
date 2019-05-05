@@ -25,7 +25,7 @@ namespace Expenses.Api.Controllers {
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CategoryViewModel>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetExpenseCategiesAsync() {
+        public async Task<IActionResult> GetCategies() {
             IEnumerable<CategoryViewModel> categories = await _categoryQueries.GetCategoriesAsync();
 
             return Ok(categories);
@@ -34,10 +34,19 @@ namespace Expenses.Api.Controllers {
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> CreateExpenseCategory(CreateCategoryCommand command) {
+        public async Task<IActionResult> CreateCategory(CreateCategoryCommand command) {
             await _mediator.Send(command);
 
             return Created("", "");
+        }
+
+        [HttpDelete]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteCategory(DeleteCategoryCommand command) {
+            await _mediator.Send(command);
+
+            return Ok();
         }
     }
 }

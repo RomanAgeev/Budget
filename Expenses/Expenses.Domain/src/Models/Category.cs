@@ -10,7 +10,7 @@ namespace Expenses.Domain.Models {
 
         string _name;
         string _description;
-        List<Expense> _expenses = new List<Expense>();
+        readonly List<Expense> _expenses = new List<Expense>();
 
         public string Name => _name;
         public string Description => _description;
@@ -19,5 +19,10 @@ namespace Expenses.Domain.Models {
         public void AddExpense(DateTime date, decimal amount, string description) {
             _expenses.Add(new Expense(date, amount, description));
         }
+
+        public void MoveExpenses(Category category) {
+            category._expenses.AddRange(_expenses);
+            _expenses.Clear();
+        }        
     }    
 }

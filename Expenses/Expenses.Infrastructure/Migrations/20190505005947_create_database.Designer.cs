@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Expenses.Infrastructure.Migrations
 {
     [DbContext(typeof(ExpenseContext))]
-    [Migration("20190502041028_create_database")]
+    [Migration("20190505005947_create_database")]
     partial class create_database
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,12 +37,17 @@ namespace Expenses.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
+                            Name = "Default"
+                        },
+                        new
+                        {
+                            Id = 2,
                             Description = "Everyday food and drink expenses",
                             Name = "Food"
                         },
                         new
                         {
-                            Id = 2,
+                            Id = 3,
                             Description = "Total petrol expenses for each car",
                             Name = "Petrol"
                         });
@@ -72,7 +77,7 @@ namespace Expenses.Infrastructure.Migrations
                         {
                             Id = 1,
                             Amount = 60m,
-                            CategoryId = 1,
+                            CategoryId = 2,
                             Date = new DateTime(2019, 4, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Weekly food shopping in the \"Shop & Go\""
                         },
@@ -80,7 +85,7 @@ namespace Expenses.Infrastructure.Migrations
                         {
                             Id = 2,
                             Amount = 40m,
-                            CategoryId = 1,
+                            CategoryId = 2,
                             Date = new DateTime(2019, 4, 28, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Weekly food shopping in the \"Shop & Go\""
                         },
@@ -88,7 +93,7 @@ namespace Expenses.Infrastructure.Migrations
                         {
                             Id = 3,
                             Amount = 35m,
-                            CategoryId = 2,
+                            CategoryId = 3,
                             Date = new DateTime(2019, 4, 24, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Description = "Fillup a fool tank of Ford"
                         });

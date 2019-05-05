@@ -47,27 +47,32 @@ namespace Expenses.Infrastructure.Migrations
             migrationBuilder.InsertData(
                 table: "Category",
                 columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 1, "Everyday food and drink expenses", "Food" });
+                values: new object[] { 1, null, "Default" });
 
             migrationBuilder.InsertData(
                 table: "Category",
                 columns: new[] { "Id", "Description", "Name" },
-                values: new object[] { 2, "Total petrol expenses for each car", "Petrol" });
+                values: new object[] { 2, "Everyday food and drink expenses", "Food" });
+
+            migrationBuilder.InsertData(
+                table: "Category",
+                columns: new[] { "Id", "Description", "Name" },
+                values: new object[] { 3, "Total petrol expenses for each car", "Petrol" });
 
             migrationBuilder.InsertData(
                 table: "Expense",
                 columns: new[] { "Id", "Amount", "CategoryId", "Date", "Description" },
-                values: new object[] { 1, 60m, 1, new DateTime(2019, 4, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), "Weekly food shopping in the \"Shop & Go\"" });
+                values: new object[] { 1, 60m, 2, new DateTime(2019, 4, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), "Weekly food shopping in the \"Shop & Go\"" });
 
             migrationBuilder.InsertData(
                 table: "Expense",
                 columns: new[] { "Id", "Amount", "CategoryId", "Date", "Description" },
-                values: new object[] { 2, 40m, 1, new DateTime(2019, 4, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), "Weekly food shopping in the \"Shop & Go\"" });
+                values: new object[] { 2, 40m, 2, new DateTime(2019, 4, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), "Weekly food shopping in the \"Shop & Go\"" });
 
             migrationBuilder.InsertData(
                 table: "Expense",
                 columns: new[] { "Id", "Amount", "CategoryId", "Date", "Description" },
-                values: new object[] { 3, 35m, 2, new DateTime(2019, 4, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), "Fillup a fool tank of Ford" });
+                values: new object[] { 3, 35m, 3, new DateTime(2019, 4, 24, 0, 0, 0, 0, DateTimeKind.Unspecified), "Fillup a fool tank of Ford" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Expense_CategoryId",
