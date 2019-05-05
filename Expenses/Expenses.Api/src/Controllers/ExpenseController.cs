@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Expenses.Api.Commands;
+using Expenses.Api.Middleware;
 using Expenses.Api.Queries;
 using Guards;
 using MediatR;
@@ -24,10 +25,19 @@ namespace Expenses.Api.Controllers {
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetExpensesAsync() {
-            IEnumerable<ExpenseViewModel> expenses = await _expenseQueries.GetExpensesAsync();
+        public async Task<IActionResult> GetExpenses() {
+            var expenses = await _expenseQueries.GetExpensesAsync();
 
             return Ok(expenses);
+        }
+
+        [HttpPost]
+        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> CreateExpense(CreateExpenseCommand command) {
+            await _mediator.Send(command);
+
+            return Created("", "");
         }
     }
 }
