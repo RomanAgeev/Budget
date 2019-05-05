@@ -15,5 +15,10 @@ namespace Expenses.Domain.Models {
         public DateTime Date => _date;
         public decimal Amount => _amount;
         public string Description => _description;
+
+        public void Update(decimal amount, string description) {
+            _amount = amount;
+            _description = description;
+        }
     }
 }

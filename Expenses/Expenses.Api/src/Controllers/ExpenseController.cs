@@ -40,6 +40,15 @@ namespace Expenses.Api.Controllers {
             return Created("", "");
         }
 
+        [HttpPut]
+        [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> UpdateExpense(UpdateExpenseCommand command) {
+            await _mediator.Send(command);
+
+            return Ok();
+        }
+
         [HttpDelete]
         [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
