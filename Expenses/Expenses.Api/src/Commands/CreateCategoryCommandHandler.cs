@@ -3,21 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Expenses.Domain;
 using Expenses.Domain.Models;
-using Guards;
-using MediatR;
 
 namespace Expenses.Api.Commands {
-    public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, bool> {
-        public CreateCategoryCommandHandler(IExpenseRepository repository) {
-            Guard.NotNull(repository, nameof(repository));
-
-            _repository = repository;
+    public class CreateCategoryCommandHandler : CommandHandlerBase<CreateCategoryCommand> {
+        public CreateCategoryCommandHandler(IExpenseRepository repository)
+            : base(repository) {            
         }
 
-        readonly IExpenseRepository _repository;
-
-        public async Task<bool> Handle(CreateCategoryCommand command, CancellationToken cancellationToken) {
-            bool duplicatedCategoryName = _repository.GetCategories().Any(it => it.Name == command.Name);
+        public override async Task<bool> Handle(CreateCategoryCommand command, CancellationToken cancellationToken) {
+            bool duplicatedCategoryName = Repository.GetCategories().Any(it => it.Name == command.Name);
             if(duplicatedCategoryName)
                 throw new DomainException(
                     cause: DomainExceptionCause.DuplicatedCategoryName, 
@@ -27,9 +21,9 @@ namespace Expenses.Api.Commands {
             
             var category = new Category(command.Name, command.Description);
 
-            _repository.AddCategory(category);
+            Repository.AddCategory(category);
 
-            await _repository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
             return true;
         }
