@@ -19,7 +19,7 @@ namespace Expenses.Api.Commands {
             Category fromCategory = await Repository.GetContainingCategoryAsync(expense, cancellationToken);
             Category toCategory = await Repository.GetCategoryAsync(command.CategoryId, cancellationToken);
             if(toCategory != fromCategory)
-                fromCategory.MoveExense(toCategory, expense);
+                fromCategory.MoveExpense(toCategory, expense);
  
             await Repository.UnitOfWork.SaveChangesAsync();
 

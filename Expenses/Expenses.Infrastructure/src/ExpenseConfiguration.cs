@@ -9,6 +9,8 @@ namespace Expenses.Infrastructure {
             builder.ToTable("Expense");
 
             builder.HasKey(it => it.Id);
+            
+            builder.Ignore("IsTransient");
 
             builder.Property<DateTime>(it => it.Date).IsRequired();
             builder.Property<decimal>(it => it.Amount).IsRequired();

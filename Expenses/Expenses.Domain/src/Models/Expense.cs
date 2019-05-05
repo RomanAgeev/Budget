@@ -16,6 +16,11 @@ namespace Expenses.Domain.Models {
         public decimal Amount => _amount;
         public string Description => _description;
 
+        public Expense WithId(int id) {
+            Id = id;
+            return this;
+        }
+
         public void Update(decimal amount, string description) {
             _amount = amount;
             _description = description;

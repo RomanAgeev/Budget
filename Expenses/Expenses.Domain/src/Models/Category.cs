@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Guards;
 
 namespace Expenses.Domain.Models {
     public class Category : Entity, IAggregateRoot {
         public Category(string name, string description) {
+            Guard.NotNullOrWhiteSpace(name, nameof(name));
+
             _name = name;
             _description = description;
         }
@@ -16,23 +20,40 @@ namespace Expenses.Domain.Models {
         public string Description => _description;
         public IReadOnlyCollection<Expense> Expenses => _expenses.AsReadOnly();
 
-        public void AddExpense(DateTime date, decimal amount, string description) {
-            _expenses.Add(new Expense(date, amount, description));
+        public Category WithId(int id) {
+            Id = id;
+            return this;
+        }
+
+        public void Update(string name, string description) {
+            Guard.NotNullOrWhiteSpace(name, nameof(name));
+
+            _name = name;
+            _description = description;
+        }
+
+        public Expense AddExpense(DateTime date, decimal amount, string description) {
+            var expense = new Expense(date, amount, description);
+            _expenses.Add(expense);
+            return expense;
         }
 
         public void MoveExpenses(Category toCategory) {
+            Guard.NotNull(toCategory, nameof(toCategory));
+
             toCategory._expenses.AddRange(_expenses);
             _expenses.Clear();
         }
 
-        public void MoveExense(Category toCategory, Expense expense) {
+        public void MoveExpense(Category toCategory, Expense expense) {
+            Guard.NotNull(toCategory, nameof(toCategory));
+            Guard.NotNull(expense, nameof(expense));
+
+            if(!_expenses.Contains(expense))
+                throw new InvalidOperationException();
+
             toCategory._expenses.Add(expense);
             _expenses.Remove(expense);
         }
-
-        public void Update(string name, string description) {
-            _name = name;
-            _description = description;
-        }
-    }    
+    }
 }

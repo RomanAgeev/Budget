@@ -9,6 +9,8 @@ namespace Expenses.Infrastructure {
 
             builder.HasKey(it => it.Id);
 
+            builder.Ignore("IsTransient");
+
             builder.Property<string>(it => it.Name).IsRequired();
             builder.Property<string>(it => it.Description);
 
