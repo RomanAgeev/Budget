@@ -39,5 +39,14 @@ namespace Expenses.Api.Controllers {
 
             return Created("", "");
         }
+
+        [HttpDelete]
+        [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> DeleteExpense(DeleteExpenseCommand command) {
+            await _mediator.Send(command);
+
+            return Ok();
+        }
     }
 }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Expenses.Domain;
 using Expenses.Domain.Models;
 using Guards;
@@ -35,6 +37,19 @@ namespace Expenses.Infrastructure {
             Guard.NotNull(category, nameof(category));
 
             _context.Categories.Remove(category);
+        }
+
+        public Task<Expense> GetExpenseAsync(int expenseId, CancellationToken cancellationToken = default(CancellationToken)) {
+            return _context.Expenses
+                .Where(it => it.Id == expenseId)
+                .SingleOrDefaultAsync(cancellationToken);
+        }
+
+        public void DeleteExpense(Expense expense) {
+            Guard.NotNull(expense, nameof(expense));
+
+            _context.Expenses.Remove(expense);
+
         }
     }
 }
