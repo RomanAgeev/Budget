@@ -20,6 +20,11 @@ namespace Expenses.Api.Commands {
                 throw new DomainException(DomainExceptionCause.ExpenseNotFound, $"Expense with {command.ExpenseId} ID is not found"); 
 
             expense.Update(command.Amount, command.Description);
+
+            Category fromCategory = await _repository.GetContainingCategoryAsync(expense, cancellationToken);
+            Category toCategory = await _repository.GetCategoryAsync(command.CategoryId, cancellationToken);
+            if(toCategory != fromCategory)
+                fromCategory.MoveExense(toCategory, expense);
  
             await _repository.UnitOfWork.SaveChangesAsync();
 

@@ -5,6 +5,9 @@ namespace Expenses.Api.Commands {
         public UpdateExpenseCommandValidator() {
             RuleFor(it => it.ExpenseId)
                 .GreaterThan(0);
+            
+            RuleFor(it => it.CategoryId)
+                .GreaterThan(0);
 
             RuleFor(it => it.Amount)
                 .GreaterThan(0);

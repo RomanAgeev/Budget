@@ -16,9 +16,9 @@ namespace Expenses.Api.Commands {
         readonly IExpenseRepository _repository;
 
         public async Task<bool> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken) {
-            Category defaultCategory = _repository.GetCategory(1);
+            Category defaultCategory = await _repository.GetCategoryAsync(1, cancellationToken);
 
-            Category category = _repository.GetCategory(command.CategoryId);
+            Category category = await _repository.GetCategoryAsync(command.CategoryId, cancellationToken);
             if(category == null)
                 throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with {command.CategoryId} ID is not found");            
 

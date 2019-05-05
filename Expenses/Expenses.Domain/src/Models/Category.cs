@@ -19,10 +19,17 @@ namespace Expenses.Domain.Models {
         public void AddExpense(DateTime date, decimal amount, string description) {
             _expenses.Add(new Expense(date, amount, description));
         }
-        public void MoveExpenses(Category category) {
-            category._expenses.AddRange(_expenses);
+
+        public void MoveExpenses(Category toCategory) {
+            toCategory._expenses.AddRange(_expenses);
             _expenses.Clear();
         }
+
+        public void MoveExense(Category toCategory, Expense expense) {
+            toCategory._expenses.Add(expense);
+            _expenses.Remove(expense);
+        }
+
         public void Update(string name, string description) {
             _name = name;
             _description = description;

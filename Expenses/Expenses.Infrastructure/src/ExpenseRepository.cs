@@ -22,11 +22,11 @@ namespace Expenses.Infrastructure {
         public IEnumerable<Category> GetCategories() {
             return _context.Categories;
         }
-        public Category GetCategory(int categoryId) {
+        public Task<Category> GetCategoryAsync(int categoryId, CancellationToken cancellationToken = default(CancellationToken)) {
             return _context.Categories
                 .Include(it => it.Expenses)
                 .Where(it => it.Id == categoryId)
-                .SingleOrDefault();
+                .SingleOrDefaultAsync();
         }
         public void AddCategory(Category category) {
             Guard.NotNull(category, nameof(category));
@@ -49,7 +49,13 @@ namespace Expenses.Infrastructure {
             Guard.NotNull(expense, nameof(expense));
 
             _context.Expenses.Remove(expense);
+        }
 
+        public Task<Category> GetContainingCategoryAsync(Expense expense, CancellationToken cancellationToken = default(CancellationToken)) {
+            Guard.NotNull(expense, nameof(expense));
+
+            int categoryId = _context.Entry(expense).Property<int>("CategoryId").CurrentValue;
+            return GetCategoryAsync(categoryId, cancellationToken);
         }
     }
 }
