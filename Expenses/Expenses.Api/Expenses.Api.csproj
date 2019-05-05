@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RA_Guards" Version="1.0.0-release" />
+    <PackageReference Include="RA_Guards" Version="1.0.1-release" />
   </ItemGroup>
 
   <ItemGroup>
