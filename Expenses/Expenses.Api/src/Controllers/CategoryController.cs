@@ -40,6 +40,15 @@ namespace Expenses.Api.Controllers {
             return Created("", "");
         }
 
+        [HttpPut]
+        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> UpdateCategory(UpdateCategoryCommand command) {
+            await _mediator.Send(command);
+
+            return Ok();
+        }
+
         [HttpDelete]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
