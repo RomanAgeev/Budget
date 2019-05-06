@@ -16,7 +16,7 @@ namespace Expenses.Api.Commands {
 
             Repository.DeleteExpense(expense);
 
-            await Repository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveAsync(cancellationToken);
 
             return true;
         }

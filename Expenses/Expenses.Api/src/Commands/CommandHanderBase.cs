@@ -14,6 +14,6 @@ namespace Expenses.Api.Commands {
 
         protected IExpenseRepository Repository { get; private set; }
 
-        public abstract Task<bool> Handle(TCommand command, CancellationToken cancellationToken);
+        public abstract Task<bool> Handle(TCommand command, CancellationToken ct);
     }
 }

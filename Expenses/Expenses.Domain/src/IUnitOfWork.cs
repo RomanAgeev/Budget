@@ -3,6 +3,6 @@ using System.Threading.Tasks;
 
 namespace Expenses.Domain {
     public interface IUnitOfWork {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task SaveAsync(CancellationToken ct);
     }
 }

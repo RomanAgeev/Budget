@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,15 +20,24 @@ namespace Expenses.Infrastructure {
 
         public IUnitOfWork UnitOfWork => _context;
 
-        public IEnumerable<Category> GetCategories() {
-            return _context.Categories;
-        }
-        public Task<Category> GetCategoryAsync(int categoryId, CancellationToken cancellationToken = default(CancellationToken)) {
+        public Task<Category> GetCategoryByIdAsync(int categoryId, CancellationToken ct) {
             return _context.Categories
-                .Include(it => it.Expenses)
                 .Where(it => it.Id == categoryId)
-                .SingleOrDefaultAsync();
+                .SingleOrDefaultAsync(ct);
+        
         }
+        public Task<Category> GetCategoryByNameAsync(string categoryName, CancellationToken ct) {
+            return _context.Categories
+                .Where(it => it.Name == categoryName)
+                .SingleOrDefaultAsync(ct);
+        }
+
+        public Task LoadExpenses(Category category, CancellationToken ct) {
+            return _context.Entry(category)
+                .Collection(it => it.Expenses)
+                .LoadAsync(ct);
+        }
+
         public void AddCategory(Category category) {
             Guard.NotNull(category, nameof(category));
 
@@ -39,7 +49,7 @@ namespace Expenses.Infrastructure {
             _context.Categories.Remove(category);
         }
 
-        public Task<Expense> GetExpenseAsync(int expenseId, CancellationToken cancellationToken = default(CancellationToken)) {
+        public Task<Expense> GetExpenseAsync(int expenseId, CancellationToken cancellationToken) {
             return _context.Expenses
                 .Where(it => it.Id == expenseId)
                 .SingleOrDefaultAsync(cancellationToken);
@@ -51,11 +61,11 @@ namespace Expenses.Infrastructure {
             _context.Expenses.Remove(expense);
         }
 
-        public Task<Category> GetContainingCategoryAsync(Expense expense, CancellationToken cancellationToken = default(CancellationToken)) {
+        public Task<Category> GetContainingCategoryAsync(Expense expense, CancellationToken cancellationToken) {
             Guard.NotNull(expense, nameof(expense));
 
             int categoryId = _context.Entry(expense).Property<int>("CategoryId").CurrentValue;
-            return GetCategoryAsync(categoryId, cancellationToken);
+            return GetCategoryByIdAsync(categoryId, cancellationToken);
         }
     }
 }

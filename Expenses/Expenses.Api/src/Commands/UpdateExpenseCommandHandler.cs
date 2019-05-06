@@ -9,19 +9,23 @@ namespace Expenses.Api.Commands {
             : base(repository) {
         }
 
-        public override async Task<bool> Handle(UpdateExpenseCommand command, CancellationToken cancellationToken) {
-            Expense expense = await Repository.GetExpenseAsync(command.ExpenseId, cancellationToken);
+        public override async Task<bool> Handle(UpdateExpenseCommand command, CancellationToken ct) {
+            Expense expense = await Repository.GetExpenseAsync(command.ExpenseId, ct);
              if(expense == null)
                 throw new DomainException(DomainExceptionCause.ExpenseNotFound, $"Expense with {command.ExpenseId} ID is not found"); 
 
             expense.Update(command.Amount, command.Description);
 
-            Category fromCategory = await Repository.GetContainingCategoryAsync(expense, cancellationToken);
-            Category toCategory = await Repository.GetCategoryAsync(command.CategoryId, cancellationToken);
+            Category fromCategory = await Repository.GetContainingCategoryAsync(expense, ct);
+            Category toCategory = await Repository.GetCategoryByIdAsync(command.CategoryId, ct);
+
+            await Repository.LoadExpenses(fromCategory, ct);
+            await Repository.LoadExpenses(toCategory, ct);
+
             if(toCategory != fromCategory)
                 fromCategory.MoveExpense(toCategory, expense);
  
-            await Repository.UnitOfWork.SaveChangesAsync();
+            await Repository.UnitOfWork.SaveAsync(ct);
 
             return true;
         }

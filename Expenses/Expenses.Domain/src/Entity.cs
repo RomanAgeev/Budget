@@ -1,7 +1,7 @@
 using System;
 using Guards;
 
-namespace Expenses.Domain.Models {
+namespace Expenses.Domain {
     public abstract class Entity {
         int _id;
 

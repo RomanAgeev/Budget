@@ -10,20 +10,17 @@ namespace Expenses.Api.Commands {
             : base(repository) {            
         }
 
-        public override async Task<bool> Handle(CreateCategoryCommand command, CancellationToken cancellationToken) {
-            bool duplicatedCategoryName = Repository.GetCategories().Any(it => it.Name == command.Name);
-            if(duplicatedCategoryName)
+        public override async Task<bool> Handle(CreateCategoryCommand command, CancellationToken ct) {
+            var category = await Repository.GetCategoryByNameAsync(command.Name, ct);
+            if(category != null)
                 throw new DomainException(
                     cause: DomainExceptionCause.DuplicatedCategoryName, 
-                    message: $"Category with the name '{command.Name}' already exists"
-                );
+                    message: $"Category '{command.Name}' already exists"
+                );            
 
-            
-            var category = new Category(command.Name, command.Description);
+            Repository.AddCategory(new Category(command.Name, command.Description));
 
-            Repository.AddCategory(category);
-
-            await Repository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveAsync(ct);
 
             return true;
         }

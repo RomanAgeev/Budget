@@ -9,18 +9,21 @@ namespace Expenses.Api.Commands {
             : base(repository) {
         }
 
-        public override async Task<bool> Handle(DeleteCategoryCommand command, CancellationToken cancellationToken) {
-            Category defaultCategory = await Repository.GetCategoryAsync(1, cancellationToken);
+        public override async Task<bool> Handle(DeleteCategoryCommand command, CancellationToken ct) {
+            Category defaultCategory = await Repository.GetCategoryByIdAsync(1, ct);
 
-            Category category = await Repository.GetCategoryAsync(command.CategoryId, cancellationToken);
+            Category category = await Repository.GetCategoryByIdAsync(command.CategoryId, ct);
             if(category == null)
-                throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with {command.CategoryId} ID is not found");            
+                throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with {command.CategoryId} ID is not found");
+
+            await Repository.LoadExpenses(defaultCategory, ct);
+            await Repository.LoadExpenses(category, ct);
 
             category.MoveExpenses(defaultCategory);
 
             Repository.DeleteCategory(category);
 
-            await Repository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveAsync(ct);
 
 
             return true;

@@ -20,6 +20,10 @@ namespace Expenses.Infrastructure {
             modelBuilder.ApplyConfiguration(new ExpenseConfiguration());
 
             modelBuilder.SeedData();
-        }        
+        }
+
+        async Task IUnitOfWork.SaveAsync(CancellationToken ct) {
+            await SaveChangesAsync(ct);
+        }
     }
 }

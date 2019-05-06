@@ -10,13 +10,13 @@ namespace Expenses.Api.Commands {
         }
 
         public override async Task<bool> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken) {
-            Category category = await Repository.GetCategoryAsync(command.CategoryId, cancellationToken);
+            Category category = await Repository.GetCategoryByIdAsync(command.CategoryId, cancellationToken);
              if(category == null)
                 throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with {command.CategoryId} ID is not found"); 
 
             category.Update(command.Name, command.Description);
 
-            await Repository.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveAsync(cancellationToken);
 
             return true;
         }
