@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Expenses.Api.Utils;
 using Expenses.Domain;
 using Expenses.Domain.Models;
 
@@ -10,9 +11,7 @@ namespace Expenses.Api.Commands {
         }
 
         public override async Task<bool> Handle(CreateExpenseCommand command, CancellationToken ct) {
-             Category category = await Repository.GetCategoryByIdAsync(command.CategoryId, ct);
-             if(category == null)
-                throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with {command.CategoryId} ID is not found"); 
+            Category category = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
 
             await Repository.LoadExpenses(category, ct);
 

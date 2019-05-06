@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Expenses.Api.Utils;
 using Expenses.Domain;
 using Expenses.Domain.Models;
 
@@ -9,14 +10,18 @@ namespace Expenses.Api.Commands {
             : base(repository) {
         }
 
-        public override async Task<bool> Handle(UpdateCategoryCommand command, CancellationToken cancellationToken) {
-            Category category = await Repository.GetCategoryByIdAsync(command.CategoryId, cancellationToken);
-             if(category == null)
-                throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with {command.CategoryId} ID is not found"); 
+        public override async Task<bool> Handle(UpdateCategoryCommand command, CancellationToken ct) {
+            if(command.CategoryId == Constants.DefaultCategoryId)
+                throw new DomainException(
+                    cause: DomainExceptionCause.DefaultCategoryUpdateOrDelete,
+                    message: $"Default category cannot be updated"
+                );
+
+            Category category = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
 
             category.Update(command.Name, command.Description);
 
-            await Repository.UnitOfWork.SaveAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveAsync(ct);
 
             return true;
         }
