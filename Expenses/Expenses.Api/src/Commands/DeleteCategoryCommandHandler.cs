@@ -15,12 +15,12 @@ namespace Expenses.Api.Commands {
 
             Category category = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
 
-            await Repository.LoadExpenses(defaultCategory, ct);
-            await Repository.LoadExpenses(category, ct);
+            await Repository.LoadExpensesAsync(defaultCategory, ct);
+            await Repository.LoadExpensesAsync(category, ct);
 
             category.MoveExpenses(defaultCategory);
 
-            Repository.DeleteCategory(category);
+            Repository.RemoveCategory(category);
 
             await Repository.UnitOfWork.SaveAsync(ct);
 

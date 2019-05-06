@@ -13,7 +13,7 @@ namespace Expenses.Api.Commands {
         public override async Task<bool> Handle(CreateExpenseCommand command, CancellationToken ct) {
             Category category = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
 
-            await Repository.LoadExpenses(category, ct);
+            await Repository.LoadExpensesAsync(category, ct);
 
             category.AddExpense(command.Date, command.Amount, command.Description);
 

@@ -32,7 +32,9 @@ namespace Expenses.Infrastructure {
                 .SingleOrDefaultAsync(ct);
         }
 
-        public Task LoadExpenses(Category category, CancellationToken ct) {
+        public Task LoadExpensesAsync(Category category, CancellationToken ct) {
+            Guard.NotNull(category, nameof(category));
+
             return _context.Entry(category)
                 .Collection(it => it.Expenses)
                 .LoadAsync(ct);
@@ -43,19 +45,20 @@ namespace Expenses.Infrastructure {
 
             _context.Categories.Add(category);
         }
-        public void DeleteCategory(Category category) {
+
+        public void RemoveCategory(Category category) {
             Guard.NotNull(category, nameof(category));
 
             _context.Categories.Remove(category);
         }
 
-        public Task<Expense> GetExpenseAsync(int expenseId, CancellationToken cancellationToken) {
+        public Task<Expense> GetExpenseByIdAsync(int expenseId, CancellationToken ct) {
             return _context.Expenses
                 .Where(it => it.Id == expenseId)
-                .SingleOrDefaultAsync(cancellationToken);
+                .SingleOrDefaultAsync(ct);
         }
 
-        public void DeleteExpense(Expense expense) {
+        public void RemoveExpense(Expense expense) {
             Guard.NotNull(expense, nameof(expense));
 
             _context.Expenses.Remove(expense);

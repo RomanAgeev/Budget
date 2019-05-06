@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Expenses.Api.Utils;
 using Expenses.Domain;
 using Expenses.Domain.Models;
 
@@ -9,14 +10,12 @@ namespace Expenses.Api.Commands {
             : base(repository) {
         }
 
-        public override async Task<bool> Handle(DeleteExpenseCommand command, CancellationToken cancellationToken) {
-            Expense expense = await Repository.GetExpenseAsync(command.ExpenseId, cancellationToken);
-             if(expense == null)
-                throw new DomainException(DomainExceptionCause.ExpenseNotFound, $"Expense with {command.ExpenseId} ID is not found"); 
+        public override async Task<bool> Handle(DeleteExpenseCommand command, CancellationToken ct) {
+            Expense expense = await Repository.EnsureExpenseByIdAsync(command.ExpenseId, ct);
 
-            Repository.DeleteExpense(expense);
+            Repository.RemoveExpense(expense);
 
-            await Repository.UnitOfWork.SaveAsync(cancellationToken);
+            await Repository.UnitOfWork.SaveAsync(ct);
 
             return true;
         }

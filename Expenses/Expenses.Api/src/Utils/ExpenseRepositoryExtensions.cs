@@ -11,5 +11,12 @@ namespace Expenses.Api.Utils {
                 throw new DomainException(DomainExceptionCause.CategoryNotFound, $"Category with ID {categoryId} doesn't exist"); 
             return category;
         }
+
+        public static async Task<Expense> EnsureExpenseByIdAsync(this IExpenseRepository repository, int expenseId, CancellationToken ct)  {
+            Expense expense = await repository.GetExpenseByIdAsync(expenseId, ct);
+            if(expense == null)
+                throw new DomainException(DomainExceptionCause.ExpenseNotFound, $"Expense with ID {expenseId} doesn't exist"); 
+            return expense;
+        }
     }
 }
