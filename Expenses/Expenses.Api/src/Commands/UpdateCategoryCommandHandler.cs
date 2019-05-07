@@ -14,7 +14,7 @@ namespace Expenses.Api.Commands {
             if(command.CategoryId == Constants.DefaultCategoryId)
                 throw new DomainException(
                     cause: DomainExceptionCause.DefaultCategoryUpdateOrDelete,
-                    message: "The default category cannot be updated"
+                    message: "It is forbidden to update the default category"
                 );
 
             Category category = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
