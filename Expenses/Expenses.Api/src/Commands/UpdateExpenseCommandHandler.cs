@@ -11,18 +11,26 @@ namespace Expenses.Api.Commands {
         }
 
         public override async Task<bool> Handle(UpdateExpenseCommand command, CancellationToken ct) {
+            if(command.CategoryId == Constants.DefaultCategoryId)
+                throw new DomainException(
+                    cause: DomainExceptionCause.DefaultCategoryUpdateOrDelete,
+                    message: "It is forbidden to move an expense to the default category"
+                );
+
             Expense expense = await Repository.EnsureExpenseByIdAsync(command.ExpenseId, ct);
 
-            expense.Update(command.Amount, command.Description);
-
-            Category fromCategory = await Repository.GetContainingCategoryAsync(expense, ct);
-            Category toCategory = await Repository.GetCategoryByIdAsync(command.CategoryId, ct);
+            int expenseCategoryId = Repository.GetExpenseCategoryId(expense);
+            
+            Category fromCategory = await Repository.EnsureCategoryByIdAsync(expenseCategoryId, ct);
+            Category toCategory = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
 
             await Repository.LoadExpensesAsync(fromCategory, ct);
             await Repository.LoadExpensesAsync(toCategory, ct);
 
             if(toCategory != fromCategory)
                 fromCategory.MoveExpense(toCategory, expense);
+
+            expense.Update(command.Amount, command.Description);
  
             await Repository.UnitOfWork.SaveAsync(ct);
 

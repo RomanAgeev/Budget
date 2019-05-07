@@ -14,6 +14,6 @@ namespace Expenses.Domain {
         void RemoveCategory(Category category);
         Task<Expense> GetExpenseByIdAsync(int expenseId, CancellationToken ct);
         void RemoveExpense(Expense expense);
-        Task<Category> GetContainingCategoryAsync(Expense expense, CancellationToken cancellationToken);
+        int GetExpenseCategoryId(Expense expense);
     }
 }

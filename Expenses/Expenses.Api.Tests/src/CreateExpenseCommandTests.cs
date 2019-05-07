@@ -26,10 +26,7 @@ namespace Expenses.Api.Tests {
             _category = new Category("category", null).WithId(CategoryId);
 
             A.CallTo(() => _fakeRepository.GetCategoryByIdAsync(CategoryId, default(CancellationToken)))
-                .Returns(_category);
-
-            _loadCategoryExpenses = A.CallTo(() => _fakeRepository.LoadExpensesAsync(_category, default(CancellationToken)));
-            
+                .Returns(_category);            
         }
 
         const int CategoryId = 100;        
@@ -39,7 +36,6 @@ namespace Expenses.Api.Tests {
         readonly CreateExpenseCommandHandler _commandHandler;
         readonly IReturnValueArgumentValidationConfiguration<Task> _saveAsync;
         readonly Category _category;
-        readonly IReturnValueArgumentValidationConfiguration<Task> _loadCategoryExpenses;
 
         [Fact]
         public async Task CreateExpenseTest() {
@@ -66,7 +62,6 @@ namespace Expenses.Api.Tests {
                 }
             });
 
-            _loadCategoryExpenses.MustHaveHappenedOnceExactly();
             _saveAsync.MustHaveHappenedOnceExactly();
         }
 
@@ -86,7 +81,6 @@ namespace Expenses.Api.Tests {
 
             _category.Expenses.Should().BeEmpty();
 
-            _loadCategoryExpenses.MustNotHaveHappened();
             _saveAsync.MustNotHaveHappened();
         }
 
@@ -113,7 +107,6 @@ namespace Expenses.Api.Tests {
 
             _category.Expenses.Should().BeEmpty();
 
-            _loadCategoryExpenses.MustNotHaveHappened();
             _saveAsync.MustNotHaveHappened();
         }
     }

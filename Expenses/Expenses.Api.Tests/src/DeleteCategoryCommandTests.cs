@@ -30,8 +30,6 @@ namespace Expenses.Api.Tests {
             A.CallTo(() => _fakeRepository.GetCategoryByIdAsync(CategoryId, default(CancellationToken)))
                 .Returns(_category);
 
-            _loadDefaultCategoryExpenses = A.CallTo(() => _fakeRepository.LoadExpensesAsync(_defaultCategory, default(CancellationToken)));
-            _loadCategoryExpenses = A.CallTo(() => _fakeRepository.LoadExpensesAsync(_category, default(CancellationToken)));
             _removeCategory = A.CallTo(() => _fakeRepository.RemoveCategory(_category));
         }
 
@@ -44,8 +42,6 @@ namespace Expenses.Api.Tests {
         readonly IReturnValueArgumentValidationConfiguration<Task> _saveAsync;
         readonly Category _defaultCategory;
         readonly Category _category;
-        readonly IReturnValueArgumentValidationConfiguration<Task> _loadDefaultCategoryExpenses;
-        readonly IReturnValueArgumentValidationConfiguration<Task> _loadCategoryExpenses;
         readonly IVoidArgumentValidationConfiguration _removeCategory;
 
         [Fact]
@@ -67,8 +63,6 @@ namespace Expenses.Api.Tests {
             _category.Expenses.Should().BeEmpty();
             _defaultCategory.Expenses.Should().BeEquivalentTo(new[] { expense1, expense2 });
 
-            _loadDefaultCategoryExpenses.MustHaveHappenedOnceExactly();
-            _loadCategoryExpenses.MustHaveHappenedOnceExactly();
             _removeCategory.MustHaveHappenedOnceExactly();
             _saveAsync.MustHaveHappenedOnceExactly();
         }
@@ -84,8 +78,6 @@ namespace Expenses.Api.Tests {
             handle.Should().Throw<DomainException>()
                 .Which.Cause.Should().Be(DomainExceptionCause.CategoryNotFound);
 
-            _loadDefaultCategoryExpenses.MustNotHaveHappened();
-            _loadCategoryExpenses.MustNotHaveHappened();
             _removeCategory.MustNotHaveHappened();
             _saveAsync.MustNotHaveHappened();
         }
@@ -101,8 +93,6 @@ namespace Expenses.Api.Tests {
             handle.Should().Throw<DomainException>()
                 .Which.Cause.Should().Be(DomainExceptionCause.DefaultCategoryUpdateOrDelete);
 
-            _loadDefaultCategoryExpenses.MustNotHaveHappened();
-            _loadCategoryExpenses.MustNotHaveHappened();
             _removeCategory.MustNotHaveHappened();
             _saveAsync.MustNotHaveHappened();
         }

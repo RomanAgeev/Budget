@@ -64,11 +64,10 @@ namespace Expenses.Infrastructure {
             _context.Expenses.Remove(expense);
         }
 
-        public Task<Category> GetContainingCategoryAsync(Expense expense, CancellationToken cancellationToken) {
+        public int GetExpenseCategoryId(Expense expense) {
             Guard.NotNull(expense, nameof(expense));
 
-            int categoryId = _context.Entry(expense).Property<int>("CategoryId").CurrentValue;
-            return GetCategoryByIdAsync(categoryId, cancellationToken);
+            return _context.Entry(expense).Property<int>("CategoryId").CurrentValue;
         }
     }
 }
