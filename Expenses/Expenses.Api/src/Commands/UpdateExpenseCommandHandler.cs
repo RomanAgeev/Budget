@@ -24,11 +24,12 @@ namespace Expenses.Api.Commands {
             Category fromCategory = await Repository.EnsureCategoryByIdAsync(expenseCategoryId, ct);
             Category toCategory = await Repository.EnsureCategoryByIdAsync(command.CategoryId, ct);
 
-            await Repository.LoadExpensesAsync(fromCategory, ct);
-            await Repository.LoadExpensesAsync(toCategory, ct);
+            if(toCategory != fromCategory) {
+                await Repository.LoadExpensesAsync(fromCategory, ct);
+                await Repository.LoadExpensesAsync(toCategory, ct);
 
-            if(toCategory != fromCategory)
                 fromCategory.MoveExpense(toCategory, expense);
+            }
 
             expense.Update(command.Amount, command.Description);
  
