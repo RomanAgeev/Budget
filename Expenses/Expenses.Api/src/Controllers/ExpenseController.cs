@@ -43,7 +43,7 @@ namespace Expenses.Api.Controllers {
         }
 
         [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateExpense(CreateExpenseCommand command) {
             int expenseId = await _mediator.Send(command);

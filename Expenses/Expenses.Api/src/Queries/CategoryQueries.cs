@@ -19,7 +19,7 @@ namespace Expenses.Api.Queries {
                 connection.Open();
 
                 return await connection.QueryAsync<CategoryViewModel>(@"
-                    SELECT Name, Description
+                    SELECT Id, Name, Description
                     FROM Category");
             }
         }
@@ -31,7 +31,7 @@ namespace Expenses.Api.Queries {
                 connection.Open();
 
                 var categories = await connection.QueryAsync<CategoryViewModel>($@"
-                    SELECT Name, Description
+                    SELECT Id, Name, Description
                     FROM Category
                     WHERE Id = {categoryId}");
                 

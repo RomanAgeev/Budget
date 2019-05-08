@@ -21,7 +21,7 @@ namespace Expenses.Api.Queries {
                 connection.Open();
 
                 return await connection.QueryAsync<ExpenseViewModel>(@"
-                    SELECT e.Description, c.Name Category, e.Date, e.Amount
+                    SELECT e.Id, c.Id CategoryId, c.Name CategoryName, e.Description, e.Date, e.Amount
                     FROM Expense e
                     INNER JOIN Category c
                     ON e.CategoryId = c.Id");
@@ -33,7 +33,7 @@ namespace Expenses.Api.Queries {
                 connection.Open();
 
                 var expenses = await connection.QueryAsync<ExpenseViewModel>($@"
-                    SELECT e.Description, c.Name Category, e.Date, e.Amount
+                    SELECT e.Id, c.Id CategoryId, c.Name CategoryName, e.Description, e.Date, e.Amount
                     FROM Expense e
                     INNER JOIN Category c
                     ON e.CategoryId = c.Id
