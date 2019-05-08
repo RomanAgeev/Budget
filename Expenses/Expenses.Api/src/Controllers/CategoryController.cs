@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -36,8 +37,12 @@ namespace Expenses.Api.Controllers {
         [HttpGet]
         [Route("{categoryId}", Name = RouteCategory)]
         [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetCategory(int categoryId) {
             CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
+
+            if(category == null)
+                return NotFound();
 
             return Ok(category);
         }
@@ -49,17 +54,23 @@ namespace Expenses.Api.Controllers {
             int categoryId = await _mediator.Send(command);
 
             CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
+            if(category == null)
+                throw new Exception("Failed to get the newly created category");
 
             return CreatedAtRoute(RouteCategory, new { categoryId }, category);
         }
 
         [HttpPut]
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateCategory(UpdateCategoryCommand command) {
             await _mediator.Send(command);
 
-            return Ok();
+            CategoryViewModel category = await _categoryQueries.GetCategoryAsync(command.CategoryId);
+            if(category == null)
+                throw new Exception("Failed to get the updated category");
+
+            return Ok(category);
         }
 
         [HttpDelete]

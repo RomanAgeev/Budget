@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -36,8 +37,12 @@ namespace Expenses.Api.Controllers {
         [HttpGet]
         [Route("{expenseId}", Name = RouteExpense)]
         [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetExpense(int expenseId) {
             ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
+
+            if(expense == null)
+                return NotFound();
 
             return Ok(expense);
         }
@@ -49,17 +54,23 @@ namespace Expenses.Api.Controllers {
             int expenseId = await _mediator.Send(command);
 
             ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
+            if(expense == null)
+                throw new Exception("Failed to get the newly created expense");
 
             return CreatedAtRoute(RouteExpense, new { expenseId }, expense);
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> UpdateExpense(UpdateExpenseCommand command) {
             await _mediator.Send(command);
 
-            return Ok();
+            ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(command.ExpenseId);
+            if(expense == null)
+                throw new Exception("Failed to get the updated expense");
+
+            return Ok(expense);
         }
 
         [HttpDelete]
