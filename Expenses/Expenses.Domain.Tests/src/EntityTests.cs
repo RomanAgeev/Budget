@@ -14,30 +14,31 @@ namespace Expenses.Domain.Tests {
             WithId(entity, 1).Id.Should().Be(1);
         }
 
-        [Fact]
-        public void EqualsWithSameIdTest() {
-            var entity1 = CreateEntity();
-            var entity2 = CreateEntity();
-
-            entity1.Should().NotBe(entity2);
-
-            entity1 = WithId(entity1, 1);
-            entity2 = WithId(entity2, 1);
-
-            entity1.Should().Be(entity2);
+        [Theory]
+        [InlineData(-1, true)]
+        [InlineData(0, true)]
+        [InlineData(1, false)]
+        public void IsTransientTest(int id, bool expectedIsTransient) {
+            var entiry = CreateEntity();
+            WithId(entiry, id).IsTransient.Should().Be(expectedIsTransient);
         }
 
-        [Fact]
-        public void EqualsWithDifferentIdTest() {
+        [Theory]
+        [InlineData(-2, -1, false)]
+        [InlineData(-1, 0, false)]
+        [InlineData(0, 1, false)]
+        [InlineData(1, 2, false)]
+        [InlineData(-1, -1, false)]
+        [InlineData(0, 0, false)]
+        [InlineData(1, 1, true)]
+        public void EqualsTest(int id1, int id2, bool expectedEquals) {
             var entity1 = CreateEntity();
             var entity2 = CreateEntity();
 
-            entity1.Should().NotBe(entity2);
+            WithId(entity1, id1);
+            WithId(entity2, id2);
 
-            entity1 = WithId(entity1, 1);
-            entity2 = WithId(entity2, 2);
-
-            entity1.Should().NotBe(entity2);
+            entity1.Equals(entity2).Should().Be(expectedEquals);
         }
 
         protected abstract TEntity CreateEntity();

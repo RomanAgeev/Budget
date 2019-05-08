@@ -5,7 +5,7 @@ namespace Expenses.Domain {
     public abstract class Entity {
         public int Id { get; protected set; }
 
-        bool IsTransient { get { return Id <= 0; } }
+        public bool IsTransient => Id <= 0;
 
         public override bool Equals(object obj) {
             if(obj == null || GetType() != obj.GetType())
