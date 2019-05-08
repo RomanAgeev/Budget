@@ -20,6 +20,7 @@ namespace Expenses.Domain.Tests {
         [InlineData(1, false)]
         public void IsTransientTest(int id, bool expectedIsTransient) {
             var entiry = CreateEntity();
+            
             WithId(entiry, id).IsTransient.Should().Be(expectedIsTransient);
         }
 

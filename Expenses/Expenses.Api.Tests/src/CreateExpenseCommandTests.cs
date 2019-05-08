@@ -21,9 +21,7 @@ namespace Expenses.Api.Tests {
 
             _commandHandler =  new CreateExpenseCommandHandler(_fakeRepository);
 
-            _category = new Category("category", null).WithId(CategoryId);
-
-            _saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
+            _category = new Category("category", null).WithId(CategoryId);            
 
             A.CallTo(() => _fakeRepository.GetCategoryByIdAsync(CategoryId, default(CancellationToken)))
                 .Returns(_category);
@@ -34,19 +32,25 @@ namespace Expenses.Api.Tests {
         readonly IExpenseRepository _fakeRepository;
         readonly IUnitOfWork _fakeUnitOfWork;
         readonly CreateExpenseCommandHandler _commandHandler;
-        readonly IReturnValueConfiguration<Task> _saveAsync;
         readonly Category _category;
 
         [Fact]
         public async Task CreateExpenseTest() {
+            const int expectedExpenseId = 111;
+
             var command = new CreateExpenseCommand {
                 CategoryId = CategoryId,
                 Date = new DateTime(2019, 1, 1),
                 Amount = 10.2m,
                 Description = "expense_description"
-            };            
+            };
 
-            await _commandHandler.Handle(command, default(CancellationToken));
+            var saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._))
+                .Invokes(() => _category.Expenses.First().WithId(expectedExpenseId));
+
+            int newExpenseId = await _commandHandler.Handle(command, default(CancellationToken));
+
+            newExpenseId.Should().Be(expectedExpenseId);
 
             _category.Expenses.Select(it => new {
                 it.Date,
@@ -60,17 +64,19 @@ namespace Expenses.Api.Tests {
                 }
             });
 
-            _saveAsync.MustHaveHappenedOnceExactly();
+            saveAsync.MustHaveHappenedOnceExactly();
         }
 
         [Fact]
         public void CreateExpenseWithNotExistedCategory() {
+            var saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
+            
             var command = new CreateExpenseCommand {
                 CategoryId = 50,
                 Date = new DateTime(2019, 1, 1),
                 Amount = 10.2m,
                 Description = "expense_description"
-            };
+            };            
 
             Func<Task<int>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
 
@@ -79,7 +85,7 @@ namespace Expenses.Api.Tests {
 
             _category.Expenses.Should().BeEmpty();
 
-            _saveAsync.MustNotHaveHappened();
+            saveAsync.MustNotHaveHappened();
         }
 
         [Fact]
@@ -90,6 +96,8 @@ namespace Expenses.Api.Tests {
 
             A.CallTo(() => _fakeRepository.GetCategoryByIdAsync(defaultCategoryId, default(CancellationToken)))
                 .Returns(defaultCategory);
+
+            var saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
 
             var command = new CreateExpenseCommand {
                 CategoryId = defaultCategoryId,
@@ -105,7 +113,7 @@ namespace Expenses.Api.Tests {
 
             _category.Expenses.Should().BeEmpty();
 
-            _saveAsync.MustNotHaveHappened();
+            saveAsync.MustNotHaveHappened();
         }
     }
 }

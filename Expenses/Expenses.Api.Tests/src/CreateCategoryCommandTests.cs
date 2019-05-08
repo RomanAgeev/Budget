@@ -15,9 +15,7 @@ namespace Expenses.Api.Tests {
             _fakeRepository = A.Fake<IExpenseRepository>(); 
             _fakeUnitOfWork = A.Fake<IUnitOfWork>();
 
-            A.CallTo(() => _fakeRepository.UnitOfWork).Returns(_fakeUnitOfWork); 
-
-            _saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
+            A.CallTo(() => _fakeRepository.UnitOfWork).Returns(_fakeUnitOfWork);            
 
             _commandHandler =  new CreateCategoryCommandHandler(_fakeRepository);
         }
@@ -25,12 +23,14 @@ namespace Expenses.Api.Tests {
         readonly IExpenseRepository _fakeRepository;
         readonly IUnitOfWork _fakeUnitOfWork;
         readonly CreateCategoryCommandHandler _commandHandler;
-        readonly IReturnValueArgumentValidationConfiguration<Task> _saveAsync;
 
         [Fact]
         public async Task CreateCategoryTest() {
             const string expectedName = "category_3";
             const string expectedDescription = "category_3_description";
+            const int expectedCategoryId = 111;
+
+            Category newCategory = null;
 
             A.CallTo(() => _fakeRepository.GetCategoryByNameAsync(expectedName, default(CancellationToken)))
                 .Returns<Category>(null);
@@ -42,17 +42,23 @@ namespace Expenses.Api.Tests {
                 }.Equals(new {
                     Name = expectedName,
                     Description = expectedDescription
-                }))));
+                }))))
+                .Invokes((Category category) => newCategory = category);                
+
+            var saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._))
+                .Invokes(() => newCategory.WithId(expectedCategoryId));
 
             var command = new CreateCategoryCommand {
                 Name = expectedName,
                 Description = expectedDescription
             };
 
-            await _commandHandler.Handle(command, default(CancellationToken));
+            int newCategoryId = await _commandHandler.Handle(command, default(CancellationToken));
+
+            newCategoryId.Should().Be(expectedCategoryId);
 
             addCategory.MustHaveHappenedOnceExactly();
-            _saveAsync.MustHaveHappenedOnceExactly();
+            saveAsync.MustHaveHappenedOnceExactly();
         }
 
         [Fact]
@@ -63,6 +69,7 @@ namespace Expenses.Api.Tests {
                 .Returns(new Category(expectedName, null));
 
             var addCategory = A.CallTo(() => _fakeRepository.AddCategory(A<Category>._));
+            var saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
 
             var command = new CreateCategoryCommand {
                 Name = expectedName,
@@ -75,7 +82,7 @@ namespace Expenses.Api.Tests {
                 .Which.Cause.Should().Be(DomainExceptionCause.DuplicatedCategoryName);
 
             addCategory.MustNotHaveHappened();
-            _saveAsync.MustNotHaveHappened();
+            saveAsync.MustNotHaveHappened();
         }
     }
 }
