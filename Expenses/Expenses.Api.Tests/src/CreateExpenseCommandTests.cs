@@ -19,22 +19,22 @@ namespace Expenses.Api.Tests {
 
             A.CallTo(() => _fakeRepository.UnitOfWork).Returns(_fakeUnitOfWork); 
 
-            _saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
-
             _commandHandler =  new CreateExpenseCommandHandler(_fakeRepository);
 
             _category = new Category("category", null).WithId(CategoryId);
 
+            _saveAsync = A.CallTo(() => _fakeUnitOfWork.SaveAsync(A<CancellationToken>._));
+
             A.CallTo(() => _fakeRepository.GetCategoryByIdAsync(CategoryId, default(CancellationToken)))
-                .Returns(_category);            
+                .Returns(_category);
         }
 
-        const int CategoryId = 100;        
+        const int CategoryId = 100;
 
         readonly IExpenseRepository _fakeRepository;
         readonly IUnitOfWork _fakeUnitOfWork;
         readonly CreateExpenseCommandHandler _commandHandler;
-        readonly IReturnValueArgumentValidationConfiguration<Task> _saveAsync;
+        readonly IReturnValueConfiguration<Task> _saveAsync;
         readonly Category _category;
 
         [Fact]
@@ -46,9 +46,7 @@ namespace Expenses.Api.Tests {
                 Description = "expense_description"
             };            
 
-            bool success = await _commandHandler.Handle(command, default(CancellationToken));
-
-            success.Should().BeTrue();
+            await _commandHandler.Handle(command, default(CancellationToken));
 
             _category.Expenses.Select(it => new {
                 it.Date,
@@ -74,7 +72,7 @@ namespace Expenses.Api.Tests {
                 Description = "expense_description"
             };
 
-            Func<Task<bool>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
+            Func<Task<int>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
 
             handle.Should().Throw<DomainException>()
                 .Which.Cause.Should().Be(DomainExceptionCause.CategoryNotFound);
@@ -100,7 +98,7 @@ namespace Expenses.Api.Tests {
                 Description = "expense_description"
             };
 
-            Func<Task<bool>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
+            Func<Task<int>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
 
             handle.Should().Throw<DomainException>()
                 .Which.Cause.Should().Be(DomainExceptionCause.DefaultCategoryUpdateOrDelete);

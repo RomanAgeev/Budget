@@ -49,11 +49,9 @@ namespace Expenses.Api.Tests {
                 Description = expectedDescription
             };
 
-            bool success = await _commandHandler.Handle(command, default(CancellationToken));
+            await _commandHandler.Handle(command, default(CancellationToken));
 
-            success.Should().BeTrue();
-
-            addCategory.MustHaveHappenedOnceExactly();           
+            addCategory.MustHaveHappenedOnceExactly();
             _saveAsync.MustHaveHappenedOnceExactly();
         }
 
@@ -71,7 +69,7 @@ namespace Expenses.Api.Tests {
                 Description = null
             };
 
-            Func<Task<bool>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
+            Func<Task<int>> handle = async () => await _commandHandler.Handle(command, default(CancellationToken));
 
             handle.Should().Throw<DomainException>()
                 .Which.Cause.Should().Be(DomainExceptionCause.DuplicatedCategoryName);

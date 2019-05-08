@@ -12,6 +12,8 @@ namespace Expenses.Api.Controllers {
     [Route("api/v1/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase {
+        const string RouteCategory = "category";
+
         public CategoryController(ICategoryQueries categoryQueries, IMediator mediator) {
             Guard.NotNull(categoryQueries, nameof(categoryQueries));
             Guard.NotNull(mediator, nameof(mediator));
@@ -31,13 +33,24 @@ namespace Expenses.Api.Controllers {
             return Ok(categories);
         }
 
+        [HttpGet]
+        [Route("{categoryId}", Name = RouteCategory)]
+        [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetCategory(int categoryId) {
+            CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
+
+            return Ok(category);
+        }
+
         [HttpPost]
-        [ProducesResponseType((int)HttpStatusCode.Created)]
+        [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateCategory(CreateCategoryCommand command) {
-            await _mediator.Send(command);
+            int categoryId = await _mediator.Send(command);
 
-            return Created("", "");
+            CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
+
+            return CreatedAtRoute(RouteCategory, new { categoryId }, category);
         }
 
         [HttpPut]

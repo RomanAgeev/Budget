@@ -3,26 +3,34 @@ using System.Threading;
 using System.Threading.Tasks;
 using Expenses.Domain;
 using Expenses.Domain.Models;
+using Guards;
+using MediatR;
 
 namespace Expenses.Api.Commands {
-    public class CreateCategoryCommandHandler : CommandHandlerBase<CreateCategoryCommand> {
-        public CreateCategoryCommandHandler(IExpenseRepository repository)
-            : base(repository) {            
+    public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, int> {
+        public CreateCategoryCommandHandler(IExpenseRepository repository) {
+            Guard.NotNull(repository, nameof(repository));
+
+            _repository = repository;
         }
 
-        public override async Task<bool> Handle(CreateCategoryCommand command, CancellationToken ct) {
-            var category = await Repository.GetCategoryByNameAsync(command.Name, ct);
+        readonly IExpenseRepository _repository;
+
+        public async Task<int> Handle(CreateCategoryCommand command, CancellationToken ct) {
+            var category = await _repository.GetCategoryByNameAsync(command.Name, ct);
             if(category != null)
                 throw new DomainException(
                     cause: DomainExceptionCause.DuplicatedCategoryName, 
                     message: $"Category '{command.Name}' already exists"
                 );            
 
-            Repository.AddCategory(new Category(command.Name, command.Description));
+            var newCategory = new Category(command.Name, command.Description);
+            
+            _repository.AddCategory(newCategory);
 
-            await Repository.UnitOfWork.SaveAsync(ct);
+            await _repository.UnitOfWork.SaveAsync(ct);
 
-            return true;
+            return newCategory.Id;
         }
     }
 }

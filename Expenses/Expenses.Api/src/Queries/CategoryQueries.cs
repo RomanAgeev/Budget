@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Guards;
@@ -20,6 +21,21 @@ namespace Expenses.Api.Queries {
                 return await connection.QueryAsync<CategoryViewModel>(@"
                     SELECT Name, Description
                     FROM Category");
+            }
+        }
+
+        public async Task<CategoryViewModel> GetCategoryAsync(int categoryId) {
+            Guard.NotZeroOrNegative(categoryId, nameof(categoryId));
+
+            using(DbConnection connection = _connectionFactory()) {
+                connection.Open();
+
+                var categories = await connection.QueryAsync<CategoryViewModel>($@"
+                    SELECT Name, Description
+                    FROM Category
+                    WHERE Id = {categoryId}");
+                
+                return categories.FirstOrDefault();
             }
         }
     }

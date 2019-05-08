@@ -3,19 +3,25 @@ using System.Threading.Tasks;
 using Expenses.Api.Utils;
 using Expenses.Domain;
 using Expenses.Domain.Models;
+using Guards;
+using MediatR;
 
 namespace Expenses.Api.Commands { 
-    public class DeleteExpenseCommandHandler : CommandHandlerBase<DeleteExpenseCommand> {
-        public DeleteExpenseCommandHandler(IExpenseRepository repository)
-            : base(repository) {
+    public class DeleteExpenseCommandHandler : IRequestHandler<DeleteExpenseCommand, bool> {
+        public DeleteExpenseCommandHandler(IExpenseRepository repository) {
+            Guard.NotNull(repository, nameof(repository));
+
+            _repository = repository;
         }
 
-        public override async Task<bool> Handle(DeleteExpenseCommand command, CancellationToken ct) {
-            Expense expense = await Repository.EnsureExpenseByIdAsync(command.ExpenseId, ct);
+        readonly IExpenseRepository _repository;
 
-            Repository.RemoveExpense(expense);
+        public async Task<bool> Handle(DeleteExpenseCommand command, CancellationToken ct) {
+            Expense expense = await _repository.EnsureExpenseByIdAsync(command.ExpenseId, ct);
 
-            await Repository.UnitOfWork.SaveAsync(ct);
+            _repository.RemoveExpense(expense);
+
+            await _repository.UnitOfWork.SaveAsync(ct);
 
             return true;
         }

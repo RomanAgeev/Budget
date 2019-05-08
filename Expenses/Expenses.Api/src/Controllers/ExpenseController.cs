@@ -12,6 +12,8 @@ namespace Expenses.Api.Controllers {
     [Route("api/v1/[controller]")]
     [ApiController]
     public class ExpenseController : ControllerBase {
+        const string RouteExpense = "expense";
+
         public ExpenseController(IExpenseQueries expenseQueries, IMediator mediator) {
             Guard.NotNull(expenseQueries, nameof(expenseQueries));
             Guard.NotNull(mediator, nameof(mediator));
@@ -26,18 +28,29 @@ namespace Expenses.Api.Controllers {
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetExpenses() {
-            var expenses = await _expenseQueries.GetExpensesAsync();
+            IEnumerable<ExpenseViewModel> expenses = await _expenseQueries.GetExpensesAsync();
 
             return Ok(expenses);
+        }
+
+        [HttpGet]
+        [Route("{expenseId}", Name = RouteExpense)]
+        [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.OK)]
+        public async Task<IActionResult> GetExpense(int expenseId) {
+            ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
+
+            return Ok(expense);
         }
 
         [HttpPost]
         [ProducesResponseType((int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> CreateExpense(CreateExpenseCommand command) {
-            await _mediator.Send(command);
+            int expenseId = await _mediator.Send(command);
 
-            return Created("", "");
+            ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
+
+            return CreatedAtRoute(RouteExpense, new { expenseId }, expense);
         }
 
         [HttpPut]

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Guards;
@@ -24,6 +25,21 @@ namespace Expenses.Api.Queries {
                     FROM Expense e
                     INNER JOIN Category c
                     ON e.CategoryId = c.Id");
+            }
+        }
+
+        public async Task<ExpenseViewModel> GetExpenseAsync(int expenseId) {
+            using(DbConnection connection = _connectionFactory()) {
+                connection.Open();
+
+                var expenses = await connection.QueryAsync<ExpenseViewModel>($@"
+                    SELECT e.Description, c.Name Category, e.Date, e.Amount
+                    FROM Expense e
+                    INNER JOIN Category c
+                    ON e.CategoryId = c.Id
+                    WHERE e.Id = {expenseId}");
+                
+                return expenses.FirstOrDefault();
             }
         }
     }

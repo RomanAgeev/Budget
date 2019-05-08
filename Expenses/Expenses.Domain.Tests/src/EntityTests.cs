@@ -14,25 +14,6 @@ namespace Expenses.Domain.Tests {
             WithId(entity, 1).Id.Should().Be(1);
         }
 
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(0)]
-        public void WithWrongId(int id) {
-             var entity = CreateEntity();
-
-             entity.Invoking(it => WithId(it, id))
-                .Should().Throw<ArgumentException>();
-        }
-
-        [Fact]
-        public void WithIdMoreThanOnceTest() {
-            var entity = CreateEntity();
-
-            WithId(entity, 1)
-                .Invoking(it => WithId(it, 2))
-                .Should().Throw<InvalidOperationException>();
-        }
-
         [Fact]
         public void EqualsWithSameIdTest() {
             var entity1 = CreateEntity();

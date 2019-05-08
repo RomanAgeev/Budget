@@ -4,5 +4,6 @@ using System.Threading.Tasks;
 namespace Expenses.Api.Queries {
     public interface IExpenseQueries {
         Task<IEnumerable<ExpenseViewModel>> GetExpensesAsync();
+        Task<ExpenseViewModel> GetExpenseAsync(int expenseId);
     }
 }

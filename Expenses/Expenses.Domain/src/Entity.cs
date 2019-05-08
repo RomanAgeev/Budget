@@ -3,21 +3,9 @@ using Guards;
 
 namespace Expenses.Domain {
     public abstract class Entity {
-        int _id;
+        public int Id { get; protected set; }
 
-        public int Id { 
-            get => _id;
-            protected set {
-                Guard.NotZeroOrNegative(value, nameof(Id));
-                
-                if(!IsTransient)
-                    throw new InvalidOperationException();
-
-                _id = value;
-            }
-        }
-
-        bool IsTransient { get { return Id == 0; } }
+        bool IsTransient { get { return Id <= 0; } }
 
         public override bool Equals(object obj) {
             if(obj == null || GetType() != obj.GetType())
