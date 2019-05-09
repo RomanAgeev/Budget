@@ -11,7 +11,7 @@ using FakeItEasy.Configuration;
 using FluentAssertions;
 using Xunit;
 
-namespace Expenses.Api.Tests {
+namespace Expenses.Api.Tests.CommandTests {
     public class CreateExpenseCommandTests {
         public CreateExpenseCommandTests() {
             _fakeRepository = A.Fake<IExpenseRepository>(); 

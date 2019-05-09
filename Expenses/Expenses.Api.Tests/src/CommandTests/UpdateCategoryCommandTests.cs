@@ -10,7 +10,7 @@ using FakeItEasy.Configuration;
 using FluentAssertions;
 using Xunit;
 
-namespace Expenses.Api.Tests {
+namespace Expenses.Api.Tests.CommandTests {
     public class UpdateCategoryCommandTests {
         public UpdateCategoryCommandTests() {
             _fakeRepository = A.Fake<IExpenseRepository>(); 

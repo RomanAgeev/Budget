@@ -28,7 +28,7 @@ namespace Expenses.Api.Controllers {
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CategoryViewModel>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetCategies() {
+        public async Task<IActionResult> GetCategiesAsync() {
             IEnumerable<CategoryViewModel> categories = await _categoryQueries.GetCategoriesAsync();
 
             return Ok(categories);
@@ -38,7 +38,7 @@ namespace Expenses.Api.Controllers {
         [Route("{categoryId}", Name = RouteCategory)]
         [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetCategory(int categoryId) {
+        public async Task<IActionResult> GetCategoryAsync(int categoryId) {
             CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
 
             if(category == null)
@@ -50,7 +50,7 @@ namespace Expenses.Api.Controllers {
         [HttpPost]
         [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> CreateCategory(CreateCategoryCommand command) {
+        public async Task<IActionResult> CreateCategoryAsync(CreateCategoryCommand command) {
             int categoryId = await _mediator.Send(command);
 
             CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
@@ -63,7 +63,7 @@ namespace Expenses.Api.Controllers {
         [HttpPut]
         [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> UpdateCategory(UpdateCategoryCommand command) {
+        public async Task<IActionResult> UpdateCategoryAsync(UpdateCategoryCommand command) {
             await _mediator.Send(command);
 
             CategoryViewModel category = await _categoryQueries.GetCategoryAsync(command.CategoryId);
@@ -76,7 +76,7 @@ namespace Expenses.Api.Controllers {
         [HttpDelete]
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeleteCategory(DeleteCategoryCommand command) {
+        public async Task<IActionResult> DeleteCategoryAsync(DeleteCategoryCommand command) {
             await _mediator.Send(command);
 
             return Ok();
