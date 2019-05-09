@@ -93,7 +93,7 @@ namespace Expenses.Api.Tests.ControllerTests {
             IActionResult result = await _controller.CreateCategoryAsync(command);
 
             var createdResult = result.Should().BeOfType<CreatedAtRouteResult>().Subject;
-            createdResult.RouteValues.Should().BeEquivalentTo(new Dictionary<string, int> { { "categoryId", 1 } });
+            createdResult.RouteValues.Should().BeEquivalentTo(new Dictionary<string, int> { { "categoryId", categoryId } });
             createdResult.Value.Should().Be(category);
 
             send.MustHaveHappenedOnceExactly();

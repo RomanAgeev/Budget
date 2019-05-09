@@ -28,7 +28,7 @@ namespace Expenses.Api.Controllers {
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetExpenses() {
+        public async Task<IActionResult> GetExpensesAsync() {
             IEnumerable<ExpenseViewModel> expenses = await _expenseQueries.GetExpensesAsync();
 
             return Ok(expenses);
@@ -38,7 +38,7 @@ namespace Expenses.Api.Controllers {
         [Route("{expenseId}", Name = RouteExpense)]
         [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
-        public async Task<IActionResult> GetExpense(int expenseId) {
+        public async Task<IActionResult> GetExpenseAsync(int expenseId) {
             ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
 
             if(expense == null)
@@ -50,7 +50,7 @@ namespace Expenses.Api.Controllers {
         [HttpPost]
         [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.Created)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> CreateExpense(CreateExpenseCommand command) {
+        public async Task<IActionResult> CreateExpenseAsync(CreateExpenseCommand command) {
             int expenseId = await _mediator.Send(command);
 
             ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
@@ -63,7 +63,7 @@ namespace Expenses.Api.Controllers {
         [HttpPut]
         [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> UpdateExpense(UpdateExpenseCommand command) {
+        public async Task<IActionResult> UpdateExpenseAsync(UpdateExpenseCommand command) {
             await _mediator.Send(command);
 
             ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(command.ExpenseId);
@@ -76,7 +76,7 @@ namespace Expenses.Api.Controllers {
         [HttpDelete]
         [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ExceptionResponse), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> DeleteExpense(DeleteExpenseCommand command) {
+        public async Task<IActionResult> DeleteExpenseAsync(DeleteExpenseCommand command) {
             await _mediator.Send(command);
 
             return Ok();
