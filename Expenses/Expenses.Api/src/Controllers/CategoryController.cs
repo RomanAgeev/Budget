@@ -15,21 +15,18 @@ namespace Expenses.Api.Controllers {
     public class CategoryController : ControllerBase {
         const string RouteCategory = "category";
 
-        public CategoryController(ICategoryQueries categoryQueries, IMediator mediator) {
-            Guard.NotNull(categoryQueries, nameof(categoryQueries));
+        public CategoryController(IMediator mediator) {
             Guard.NotNull(mediator, nameof(mediator));
 
-            _categoryQueries = categoryQueries;
             _mediator = mediator;
         }
 
-        readonly ICategoryQueries _categoryQueries;
         readonly IMediator _mediator;
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CategoryViewModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetCategiesAsync() {
-            IEnumerable<CategoryViewModel> categories = await _categoryQueries.GetCategoriesAsync();
+            IEnumerable<CategoryViewModel> categories = await _mediator.Send(new GetCategoriesQuery());
 
             return Ok(categories);
         }
@@ -39,7 +36,7 @@ namespace Expenses.Api.Controllers {
         [ProducesResponseType(typeof(CategoryViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetCategoryAsync(int categoryId) {
-            CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
+            CategoryViewModel category = await _mediator.Send(new GetCategoryQuery(categoryId));
 
             if(category == null)
                 return NotFound();
@@ -53,7 +50,7 @@ namespace Expenses.Api.Controllers {
         public async Task<IActionResult> CreateCategoryAsync(CreateCategoryCommand command) {
             int categoryId = await _mediator.Send(command);
 
-            CategoryViewModel category = await _categoryQueries.GetCategoryAsync(categoryId);
+            CategoryViewModel category = await _mediator.Send(new GetCategoryQuery(categoryId));
             if(category == null)
                 throw new Exception("Failed to get the newly created category");
 
@@ -66,7 +63,7 @@ namespace Expenses.Api.Controllers {
         public async Task<IActionResult> UpdateCategoryAsync(UpdateCategoryCommand command) {
             await _mediator.Send(command);
 
-            CategoryViewModel category = await _categoryQueries.GetCategoryAsync(command.CategoryId);
+            CategoryViewModel category = await _mediator.Send(new GetCategoryQuery(command.CategoryId));
             if(category == null)
                 throw new Exception("Failed to get the updated category");
 

@@ -15,21 +15,18 @@ namespace Expenses.Api.Controllers {
     public class ExpenseController : ControllerBase {
         const string RouteExpense = "expense";
 
-        public ExpenseController(IExpenseQueries expenseQueries, IMediator mediator) {
-            Guard.NotNull(expenseQueries, nameof(expenseQueries));
+        public ExpenseController(IMediator mediator) {
             Guard.NotNull(mediator, nameof(mediator));
 
-            _expenseQueries = expenseQueries;
             _mediator = mediator;
         }
 
-        readonly IExpenseQueries _expenseQueries;
         readonly IMediator _mediator;
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ExpenseViewModel>), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetExpensesAsync() {
-            IEnumerable<ExpenseViewModel> expenses = await _expenseQueries.GetExpensesAsync();
+            IEnumerable<ExpenseViewModel> expenses = await _mediator.Send(new GetExpensesQuery());
 
             return Ok(expenses);
         }
@@ -39,7 +36,7 @@ namespace Expenses.Api.Controllers {
         [ProducesResponseType(typeof(ExpenseViewModel), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<IActionResult> GetExpenseAsync(int expenseId) {
-            ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
+            ExpenseViewModel expense = await _mediator.Send(new GetExpenseQuery(expenseId));
 
             if(expense == null)
                 return NotFound();
@@ -53,7 +50,7 @@ namespace Expenses.Api.Controllers {
         public async Task<IActionResult> CreateExpenseAsync(CreateExpenseCommand command) {
             int expenseId = await _mediator.Send(command);
 
-            ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(expenseId);
+            ExpenseViewModel expense = await _mediator.Send(new GetExpenseQuery(expenseId));
             if(expense == null)
                 throw new Exception("Failed to get the newly created expense");
 
@@ -66,7 +63,7 @@ namespace Expenses.Api.Controllers {
         public async Task<IActionResult> UpdateExpenseAsync(UpdateExpenseCommand command) {
             await _mediator.Send(command);
 
-            ExpenseViewModel expense = await _expenseQueries.GetExpenseAsync(command.ExpenseId);
+            ExpenseViewModel expense = await _mediator.Send(new GetExpenseQuery(command.ExpenseId));
             if(expense == null)
                 throw new Exception("Failed to get the updated expense");
 

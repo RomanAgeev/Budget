@@ -14,12 +14,10 @@ using Xunit;
 namespace Expenses.Api.Tests.ControllerTests {
     public class CategoryControllerTests {
         public CategoryControllerTests() {
-            _fakeQueries = A.Fake<ICategoryQueries>();
             _fakeMediator = A.Fake<IMediator>();
-            _controller = new CategoryController(_fakeQueries, _fakeMediator);
+            _controller = new CategoryController(_fakeMediator);
         }
 
-        readonly ICategoryQueries _fakeQueries;
         readonly IMediator _fakeMediator;
         readonly CategoryController _controller;
 
@@ -38,7 +36,7 @@ namespace Expenses.Api.Tests.ControllerTests {
                 }
             };
 
-            var getCategoies = A.CallTo(() => _fakeQueries.GetCategoriesAsync())
+            var getCategoies = A.CallTo(() => _fakeMediator.Send(A<GetCategoriesQuery>._, default(CancellationToken)))
                 .Returns(categories);            
 
             IActionResult result = await _controller.GetCategiesAsync();
@@ -58,8 +56,12 @@ namespace Expenses.Api.Tests.ControllerTests {
                 Description = "First_Description"
             };
 
-            A.CallTo(() => _fakeQueries.GetCategoryAsync(categoryId)).Returns(category);
-            A.CallTo(() => _fakeQueries.GetCategoryAsync(categoryIdWrong)).Returns<CategoryViewModel>(null);
+            A.CallTo(() => _fakeMediator.Send(A<GetCategoryQuery>.That
+                .Matches(it => it.CategoryId == categoryId), default(CancellationToken)))
+                .Returns(category);
+            A.CallTo(() => _fakeMediator.Send(A<GetCategoryQuery>.That
+                .Matches(it => it.CategoryId == categoryIdWrong), default(CancellationToken)))
+                .Returns<CategoryViewModel>(null);
 
             IActionResult okResult = await _controller.GetCategoryAsync(categoryId);
             okResult.Should().BeOfType<OkObjectResult>()
@@ -81,13 +83,14 @@ namespace Expenses.Api.Tests.ControllerTests {
             var category = new CategoryViewModel {
                 Id = categoryId,
                 Name = "First",
-                Description = "First_Description"                
+                Description = "First_Description"
             };
 
             var send = A.CallTo(() => _fakeMediator.Send(command, default(CancellationToken)));
             send.Returns(categoryId);
 
-            A.CallTo(() => _fakeQueries.GetCategoryAsync(categoryId))
+            A.CallTo(() => _fakeMediator.Send(A<GetCategoryQuery>.That
+                .Matches(it => it.CategoryId == categoryId), default(CancellationToken)))
                 .Returns(category);
 
             IActionResult result = await _controller.CreateCategoryAsync(command);
@@ -111,7 +114,8 @@ namespace Expenses.Api.Tests.ControllerTests {
             A.CallTo(() => _fakeMediator.Send(command, default(CancellationToken)))
                 .Returns(categoryId);
 
-            A.CallTo(() => _fakeQueries.GetCategoryAsync(categoryId))
+            A.CallTo(() => _fakeMediator.Send(A<GetCategoryQuery>.That
+                .Matches(it => it.CategoryId == categoryId), default(CancellationToken)))
                 .Returns<CategoryViewModel>(null);
 
             Func<Task<IActionResult>> action = async () => await _controller.CreateCategoryAsync(command);
@@ -137,7 +141,8 @@ namespace Expenses.Api.Tests.ControllerTests {
 
             var send = A.CallTo(() => _fakeMediator.Send(command, default(CancellationToken)));
 
-            A.CallTo(() => _fakeQueries.GetCategoryAsync(categoryId))
+            A.CallTo(() => _fakeMediator.Send(A<GetCategoryQuery>.That
+                .Matches(it => it.CategoryId == categoryId), default(CancellationToken)))
                 .Returns(category);
 
             IActionResult result = await _controller.UpdateCategoryAsync(command);
@@ -158,7 +163,8 @@ namespace Expenses.Api.Tests.ControllerTests {
                 Description = "First_Description"
             };
 
-            A.CallTo(() => _fakeQueries.GetCategoryAsync(categoryId))
+            A.CallTo(() => _fakeMediator.Send(A<GetCategoryQuery>.That
+                .Matches(it => it.CategoryId == categoryId), default(CancellationToken)))
                 .Returns<CategoryViewModel>(null);
 
             Func<Task<IActionResult>> action = async () => await _controller.UpdateCategoryAsync(command);

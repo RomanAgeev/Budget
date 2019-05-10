@@ -14,12 +14,10 @@ using Xunit;
 namespace Expenses.Api.Tests.ControllerTests {
     public class ExpenseControllerTests {
         public ExpenseControllerTests() {
-            _fakeQueries = A.Fake<IExpenseQueries>();
             _fakeMediator = A.Fake<IMediator>();
-            _controller = new ExpenseController(_fakeQueries, _fakeMediator);
+            _controller = new ExpenseController(_fakeMediator);
         }
 
-        readonly IExpenseQueries _fakeQueries;
         readonly IMediator _fakeMediator;
         readonly ExpenseController _controller;
 
@@ -43,8 +41,8 @@ namespace Expenses.Api.Tests.ControllerTests {
                     Description = "Expense 2"
                 }
             };
-
-            A.CallTo(() => _fakeQueries.GetExpensesAsync())
+            
+            A.CallTo(() => _fakeMediator.Send(A<GetExpensesQuery>._, default(CancellationToken)))
                 .Returns(expenses);
 
             IActionResult result = await _controller.GetExpensesAsync();
@@ -67,9 +65,12 @@ namespace Expenses.Api.Tests.ControllerTests {
                 Description = "Expense 1"
             };
 
-            A.CallTo(() => _fakeQueries.GetExpenseAsync(expenseId))
+            A.CallTo(() => _fakeMediator.Send(A<GetExpenseQuery>.That
+                .Matches(it => it.ExpenseId == expenseId), default(CancellationToken)))
                 .Returns(expense);
-            A.CallTo(() => _fakeQueries.GetExpenseAsync(expenseIdWrong))
+
+            A.CallTo(() => _fakeMediator.Send(A<GetExpenseQuery>.That
+                .Matches(it => it.ExpenseId == expenseIdWrong), default(CancellationToken)))
                 .Returns<ExpenseViewModel>(null);
 
             var okResult = await _controller.GetExpenseAsync(expenseId);
@@ -103,7 +104,8 @@ namespace Expenses.Api.Tests.ControllerTests {
             var send = A.CallTo(() => _fakeMediator.Send(command, default(CancellationToken)));
             send.Returns(expenseId);
 
-            A.CallTo(() => _fakeQueries.GetExpenseAsync(expenseId))
+            A.CallTo(() => _fakeMediator.Send(A<GetExpenseQuery>.That
+                .Matches(it => it.ExpenseId == expenseId), default(CancellationToken)))
                 .Returns(expense);
 
             IActionResult result = await _controller.CreateExpenseAsync(command);
@@ -128,7 +130,9 @@ namespace Expenses.Api.Tests.ControllerTests {
 
             A.CallTo(() => _fakeMediator.Send(command, default(CancellationToken)))
                 .Returns(expenseId);
-            A.CallTo(() => _fakeQueries.GetExpenseAsync(expenseId))
+
+            A.CallTo(() => _fakeMediator.Send(A<GetExpenseQuery>.That
+                .Matches(it => it.ExpenseId == expenseId), default(CancellationToken)))
                 .Returns<ExpenseViewModel>(null);
 
             Func<Task<IActionResult>> action = async () => await _controller.CreateExpenseAsync(command);
@@ -158,7 +162,8 @@ namespace Expenses.Api.Tests.ControllerTests {
 
             var send = A.CallTo(() => _fakeMediator.Send(command, default(CancellationToken)));
 
-            A.CallTo(() => _fakeQueries.GetExpenseAsync(expenseId))
+            A.CallTo(() => _fakeMediator.Send(A<GetExpenseQuery>.That
+                .Matches(it => it.ExpenseId == expenseId), default(CancellationToken)))
                 .Returns(expense);
 
             IActionResult result = await _controller.UpdateExpenseAsync(command);
@@ -177,10 +182,11 @@ namespace Expenses.Api.Tests.ControllerTests {
                 ExpenseId = expenseId,
                 CategoryId = 2,
                 Amount = 1.5m,
-                Description = "Expense 3"                
+                Description = "Expense 3"
             };
 
-            A.CallTo(() => _fakeQueries.GetExpenseAsync(expenseId))
+            A.CallTo(() => _fakeMediator.Send(A<GetExpenseQuery>.That
+                .Matches(it => it.ExpenseId == expenseId), default(CancellationToken)))
                 .Returns<ExpenseViewModel>(null);
 
             Func<Task<IActionResult>> action = async () => await _controller.UpdateExpenseAsync(command);
