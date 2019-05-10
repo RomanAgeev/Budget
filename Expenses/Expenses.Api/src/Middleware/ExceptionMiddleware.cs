@@ -24,34 +24,36 @@ namespace Expenses.Api.Middleware {
         public async Task Invoke(HttpContext context) {
             try {
                 await _next(context);
+
             } catch(ValidationException e) {
-                var messages = e.Errors.Select(it => it.ErrorMessage).ToArray();
+                string cause = "Validation";
 
-                _logger.LogWarning(1000, e, $"Validation: {string.Join("\n", messages)}");
+                LogException(e, cause);
 
                 await HandleServerError(context, new ExceptionResponse(
-                    status: HttpStatusCode.BadRequest,
-                    cause: "Validation",
-                    errors: messages
-                ));
+                    HttpStatusCode.BadRequest,
+                    cause,
+                    e.Errors.Select(it => it.ErrorMessage).ToArray()));
+
             } catch(DomainException e) {
-                _logger.LogWarning(1001, e, e.Message);
+                string cause = Enum.GetName(typeof(DomainExceptionCause), e.Cause);
+
+                LogException(e, cause);
 
                 await HandleServerError(context, new ExceptionResponse(
-                    status: HttpStatusCode.BadRequest,
-                    cause: System.Enum.GetName(typeof(DomainExceptionCause), e.Cause),
-                    errors: new[] { e.Message }
-                ));
-            } catch(Exception e) {
-                _logger.LogError(1002, "Unhandled Server Error", e.Message);
-
-                throw;
+                    HttpStatusCode.BadRequest,
+                    cause,
+                    new[] { e.Message }));
             }
         }
 
+        void LogException(Exception e, string cause) {
+            _logger.LogWarning(e, "Cause {cause}", cause);
+        }
+        
         async Task HandleServerError(HttpContext context, ExceptionResponse exceptionResponse) {
             context.Response.StatusCode = (int)exceptionResponse.Status;
-            context.Response.ContentType = "application/json";            
+            context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(exceptionResponse.ToString());
         }
     }

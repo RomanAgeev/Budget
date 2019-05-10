@@ -5,18 +5,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Guards;
+using Microsoft.Extensions.Logging;
 
 namespace Expenses.Api.Queries {
     public class ExpenseQueries : IExpenseQueries {
-        public ExpenseQueries(DbConnectionFactory connectionFactory) {
+        public ExpenseQueries(DbConnectionFactory connectionFactory, ILogger<ExpenseQueries> logger) {
             Guard.NotNull(connectionFactory, nameof(connectionFactory));
+            Guard.NotNull(logger, nameof(logger));
 
             _connectionFactory = connectionFactory;
+            _logger = logger;
         }
 
         readonly DbConnectionFactory _connectionFactory;
+        readonly ILogger<ExpenseQueries> _logger;
 
         public async Task<IEnumerable<ExpenseViewModel>> GetExpensesAsync() {
+            _logger.LogInformation("Querying expenses from storage");
+
             using(DbConnection connection = _connectionFactory()) {
                 connection.Open();
 
@@ -29,6 +35,10 @@ namespace Expenses.Api.Queries {
         }
 
         public async Task<ExpenseViewModel> GetExpenseAsync(int expenseId) {
+            Guard.NotZeroOrNegative(expenseId, nameof(expenseId));
+
+            _logger.LogInformation("Querying expense {expenseId} from storage", expenseId);
+
             using(DbConnection connection = _connectionFactory()) {
                 connection.Open();
 

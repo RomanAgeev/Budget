@@ -17,11 +17,11 @@ namespace Expenses.Api.Behaviors {
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next) {            
             string commandName = request.GetType().Name;
 
-            _logger.LogInformation("----- Handling command \"{commandName}\"\n----- Request: {request}", commandName, request);
+            _logger.LogInformation("Handling command {commandName} with request {@request}", commandName, request);
 
             var response = await next();
 
-            _logger.LogInformation("----- Command \"{commandName}\" handled\n----- Response: {response}", commandName, response);
+            _logger.LogInformation("Command {commandName} handled with response {@response}", commandName, response);
 
             return response;
         }
