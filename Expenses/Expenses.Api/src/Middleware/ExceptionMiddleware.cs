@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Expenses.Api.Utils;
 using Expenses.Domain;
 using FluentValidation;
 using Guards;
@@ -28,7 +29,7 @@ namespace Expenses.Api.Middleware {
             } catch(ValidationException e) {
                 string cause = "Validation";
 
-                LogException(e, cause);
+                _logger.WarningException(e, cause);
 
                 await HandleServerError(context, new ExceptionResponse(
                     HttpStatusCode.BadRequest,
@@ -38,7 +39,7 @@ namespace Expenses.Api.Middleware {
             } catch(DomainException e) {
                 string cause = Enum.GetName(typeof(DomainExceptionCause), e.Cause);
 
-                LogException(e, cause);
+                _logger.WarningException(e, cause);
 
                 await HandleServerError(context, new ExceptionResponse(
                     HttpStatusCode.BadRequest,
@@ -47,10 +48,6 @@ namespace Expenses.Api.Middleware {
             }
         }
 
-        void LogException(Exception e, string cause) {
-            _logger.LogWarning(e, "Cause {cause}", cause);
-        }
-        
         async Task HandleServerError(HttpContext context, ExceptionResponse exceptionResponse) {
             context.Response.StatusCode = (int)exceptionResponse.Status;
             context.Response.ContentType = "application/json";
