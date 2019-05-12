@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Threading.Tasks;
 using Expenses.Api.Behaviors;
 using Expenses.Api.Middleware;
 using Expenses.Api.Queries;
@@ -40,7 +39,9 @@ namespace Expenses.Api {
                 });
             });
 
-            string connectionString = Configuration.GetConnectionString("ExpensesConnection");
+            string connectionString = string.Format(
+                Configuration.GetConnectionString("ExpensesConnection"),
+                Configuration["EXPENSES_DB_PASSWORD"]);
 
             services.AddDbContext<ExpenseContext>(options => options.UseMySql(connectionString));
             
@@ -62,7 +63,7 @@ namespace Expenses.Api {
             services.For(typeof(IPipelineBehavior<,>)).Use(typeof(ValidationBehavior<,>));
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env) {
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ExpenseContext context) {
             app.UseMiddleware<ExceptionMiddleware>();
             
             app.UseMvc();
@@ -71,6 +72,9 @@ namespace Expenses.Api {
                 it.SwaggerEndpoint("/swagger/v1/swagger.json", "Expenses.Api V1");
                 it.RoutePrefix = string.Empty;
             });
+
+            // NOTE: Initial migration can fail several times with a brand new docker volume
+            context.Database.Migrate();
         }
     }
 }

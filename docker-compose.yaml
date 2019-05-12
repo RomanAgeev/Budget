@@ -1,0 +1,31 @@
+version: '3'
+services:
+  expenses_db:
+    image: mysql:5.7
+    container_name: ra_expenses_db
+    environment:
+      MYSQL_DATABASE: expenses_prod
+      MYSQL_USER: prod
+      MYSQL_PASSWORD: ${EXPENSES_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${EXPENSES_DB_ROOT_PASSWORD}
+    expose:
+      - 3306
+    volumes:
+      - expenses:/var/lib/mysql
+    restart: always
+  
+  expenses:
+    build: Expenses
+    image: ra/expenses:0.0.1
+    container_name: ra_expenses
+    depends_on:
+      - expenses_db
+    ports:
+      - 5000:80
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+      EXPENSES_DB_PASSWORD: ${EXPENSES_DB_PASSWORD}
+    restart: always
+
+volumes:
+  expenses:
