@@ -15,7 +15,7 @@ apiEndpoints:
 
 serviceEndpoints:
   api:
-    url: "http://expenses/api/v1"
+    url: ${EXPENSES_API_URL:-http://localhost:5000/api/v1}
 
 policies:
   - basic-auth
@@ -31,8 +31,7 @@ pipelines:
     apiEndpoints:
       - api
     policies:
-      -
-        proxy:
-          -
-            action:
+      - proxy:
+          - action:
               serviceEndpoint: api
+
