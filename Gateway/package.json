@@ -2,9 +2,9 @@
   "name": "gateway",
   "version": "0.0.1",
   "description": "",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "./node_modules/.bin/ts-node ./src/app.ts",
+    "start": "./node_modules/.bin/ts-node ./src/index.ts",
     "nodemon": "./node_modules/.bin/nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,10 +20,12 @@
     "@types/axios": "^0.14.0",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
+    "@types/js-yaml": "^3.12.1",
     "@types/node": "^12.0.1",
     "axios": "^0.18.0",
     "body-parser": "^1.19.0",
     "express": "^4.16.4",
+    "js-yaml": "^3.13.1",
     "url-pattern": "^1.0.3"
   }
 }

@@ -1,0 +1,10 @@
+services:
+  expenses:
+    host: http://localhost:5000
+    routes:
+      -
+        public: /api/category(/:categoryId)
+        private: /api/v1/category(/:categoryId)
+      -
+        public: /api/expense(/:expenseId)
+        private: /api/v1/expense(/:expenseId)
