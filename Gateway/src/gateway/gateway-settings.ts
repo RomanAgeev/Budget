@@ -17,54 +17,154 @@ const ensureSettings = async (settingsPath: string): Promise<void> => {
         settings = yaml.safeLoad(settingsYaml);
 
         const settingsReducer = parseSettings(settings);
-        if (!settingsReducer(new Validator())) {
-            throw new Error("settings are wrong");
+        if (settingsReducer) {
+            const results = settingsReducer(new QueryRequest("services/*/routes/*/public"));
+            if (results.length > 0) {
+                console.log("public:" + JSON.stringify(results[0]));
+                const _private = settingsReducer(new QueryRequest(results[0].path + "/./private"));
+                console.log("private:" + JSON.stringify(_private));
+                const host = settingsReducer(new QueryRequest(results[0].path + "/./././host"));
+                console.log("host:" + JSON.stringify(host));
+            }
         }
     }
 };
 
 const readFileAsync = util.promisify(fs.readFile);
 
-export interface IVisitor {
-    visitProp(name: string, obj: any): boolean;
-    visitText(value: string): boolean;
+type Check = (obj: any) => Query | null;
+type Query = (request: QueryRequest) => IQueryResult[];
+
+class QueryRequest {
+    constructor(pathStr: string) {
+        const arr = pathStr.split("/");
+        for (const seg of arr) {
+            if (seg === ".") {
+                this._path.pop();
+            } else {
+                this._path.push(seg);
+            }
+        }
+    }
+
+    private readonly _path: string[] = [];
+    private _currentPath: string[] = [];
+
+    public get currentPath() {
+        return this._currentPath.join("/");
+    }
+
+    public get found(): boolean {
+        return this._index === this._path.length;
+    }
+
+    private get _index(): number {
+        return this._currentPath.length;
+    }
+
+    public goDown(name: string): boolean {
+        if (this._matchName(name)) {
+            this._currentPath.push(name);
+            return true;
+        }
+        return false;
+    }
+
+    public goUp(): void {
+        this._currentPath.pop();
+    }
+
+    private _matchName(name: string): boolean {
+        const pathName: string = this._path[this._index];
+        return pathName === "*" || pathName === name;
+    }
 }
 
-export class Validator implements IVisitor {
-    public visitProp(name: string, obj: any): boolean {
-        return obj && obj[name];
-    }
-    public visitText(value: string): boolean {
-        return typeof value === "string";
-    }
+interface IQueryResult {
+    readonly path: string;
+    readonly value: any;
 }
 
-type Check = (obj: any) => Reduce;
-type Reduce = (visitor: IVisitor, propName?: string) => boolean;
-
-const text = (value: any): Reduce =>
-    (visitor: IVisitor) => visitor.visitText(value);
-
-const list = (check: Check) => (value: any): Reduce => {
-    const reducers: Reduce[] = (value && value instanceof Array) ? value.map(it => check(it)) : [];
-
-    return (visitor: IVisitor) => reducers.every(reduce => reduce(visitor)); // TODO: The same
+const text = (value: any): Query | null => {
+    if (typeof value === "string") {
+        return (request: QueryRequest): IQueryResult[] => {
+            if (request.found) {
+                return [{
+                    path: request.currentPath,
+                    value,
+                }];
+            }
+            return [];
+        };
+    }
+    return null;
 };
 
-const map = (checks: Check[]) => (value: any): Reduce => {
-    const reducers: Reduce[] = value ? checks.map(check => check(value)) : [];
-
-    return (visitor: IVisitor) => reducers.every(reduce => reduce(visitor)); // TODO: The same
+const list = (check: Check) => (value: any): Query | null => {
+    if (value instanceof Array) {
+        const queries = value.map(it => check(it));
+        if (queries.some(it => it === null)) {
+            return null;
+        }
+        return (request: QueryRequest): IQueryResult[] => {
+            if (request.found) {
+                return [{
+                    path: request.currentPath,
+                    value,
+                }];
+            }
+            return queries.map((it, index: number) => {
+                if (request.goDown(index.toString())) {
+                    const result = it!(request);
+                    request.goUp();
+                    return result;
+                }
+                return [];
+            })
+            .reduce((results: IQueryResult[], acc: IQueryResult[]) => acc.concat(results), []);
+        };
+    }
+    return null;
 };
 
-const prop = (name: string, checkValue: Check) => (obj: any): Reduce => {
+const map = (checks: Check[]) => (value: any): Query | null => {
+    const queries = value ? checks.map(check => check(value)) : [];
+    if (queries.some(it => it === null)) {
+        return null;
+    }
+
+    return (request: QueryRequest): IQueryResult[] => {
+        if (request.found) {
+            return [{
+                path: request.currentPath,
+                value,
+            }];
+        }
+        return queries
+            .map(it => it!(request))
+            .reduce((results: IQueryResult[], acc: IQueryResult[]) => acc.concat(results), []);
+    };
+};
+
+const prop = (name: string, checkValue: Check) => (obj: any): Query | null => {
     const names = name === "*" ? Object.getOwnPropertyNames(obj) : [name];
-    const reducers: Array<{ name: string, reducer: Reduce }> = names.map(it => ({
-        name: it,
-        reducer: checkValue(obj[it]),
-    }));
 
-    return (visitor: IVisitor) => reducers.every(it => visitor.visitProp(it.name, obj) && it.reducer(visitor, it.name));
+    const queries = names.map(it => obj[it] ? checkValue(obj[it]) : null);
+    if (queries.some(it => it === null)) {
+        return null;
+    }
+
+    return (request: QueryRequest): IQueryResult[] => {
+        return queries.map((it, index: number) => {
+            if (request.goDown(names[index])) {
+                const result = it!(request);
+                request.goUp();
+                return result;
+            }
+            return [];
+        })
+        .reduce((results: IQueryResult[], acc: IQueryResult[]) => acc.concat(results), []);
+    };
 };
 
 const parseSettings = map([

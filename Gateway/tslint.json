@@ -9,7 +9,9 @@
         "object-literal-sort-keys": false,
         "arrow-parens": false,
         "max-line-length": false,
-        "max-classes-per-file": false
+        "max-classes-per-file": false,
+        "member-ordering": false,
+        "variable-name": false
     },
     "rulesDirectory": []
 }
