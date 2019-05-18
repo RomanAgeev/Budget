@@ -14,7 +14,8 @@
         "variable-name": false,
         "member-access": false,
         "array-type": false,
-        "align": false
+        "align": false,
+        "interface-over-type-literal": false
     },
     "rulesDirectory": []
 }
