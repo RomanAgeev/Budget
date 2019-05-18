@@ -2,7 +2,7 @@ import fs from "fs";
 import util from "util";
 import yaml from "js-yaml";
 import UrlPattern from "url-pattern";
-import { JsonParseError, flattenErrors, isJsonParseErrors, JsonQuery } from "../json-queries";
+import { JsonParseError, flattenErrors, isJsonParseErrors, JsonQuery, JsonQueryResult } from "../json-queries";
 
 let settings: any = null;
 
@@ -39,26 +39,20 @@ type Check = (obj: any, position: string[]) => JsonQuery | JsonParseError[];
 
 // type QueryPredicate = (value: any) => boolean;
 
+type valueType = "string" | "number" | "boolean";
 
-
-const text = (value: any, position: string[] = []): JsonQuery | JsonParseError[] => {
-    if (typeof value === "string") {
-        return new JsonQuery(request => {
-            if (request.found) {
-                return [{
-                    path: request.currentPath,
-                    value,
-                }];
-            }
-            return [];
-        });
+const value = (type: valueType) => (obj: any, position: string[] = []): JsonQuery | JsonParseError[] => {
+    if (typeof obj === "string") {
+        return new JsonQuery(request => request.found ?
+            [new JsonQueryResult(obj, request.currentPath)] :
+            []);
     }
     return [new JsonParseError("string value is expected", position)];
 };
 
-const list = (check: Check) => (value: any, position: string[] = []): JsonQuery | JsonParseError[] => {
-    if (value instanceof Array) {
-        const queries = value.map((it, index: number) => check(it, position.concat(index.toString())));
+const list = (check: Check) => (obj: any, position: string[] = []): JsonQuery | JsonParseError[] => {
+    if (obj instanceof Array) {
+        const queries = obj.map((it, index: number) => check(it, position.concat(index.toString())));
 
         const errorsList = queries.filter(it => isJsonParseErrors(it)) as JsonParseError[][];
         if (errorsList.length > 0) {
@@ -67,10 +61,7 @@ const list = (check: Check) => (value: any, position: string[] = []): JsonQuery 
 
         return new JsonQuery(request => {
             if (request.found) {
-                return [{
-                    path: request.currentPath,
-                    value,
-                }];
+                return [new JsonQueryResult(obj, request.currentPath)];
             }
             return (queries as JsonQuery[]).map((it, index: number) => {
                 if (request.goDown(index.toString())) {
@@ -86,8 +77,8 @@ const list = (check: Check) => (value: any, position: string[] = []): JsonQuery 
     return [new JsonParseError("array is expected", position)];
 };
 
-const map = (checks: Check[]) => (value: any, position: string[] = []): JsonQuery | JsonParseError[] => {
-    const queries = value ? checks.map(check => check(value, position)) : [];
+const map = (checks: Check[]) => (obj: any, position: string[] = []): JsonQuery | JsonParseError[] => {
+    const queries = obj ? checks.map(check => check(obj, position)) : [];
 
     const errorsList = queries.filter(it => isJsonParseErrors(it)) as JsonParseError[][];
     if (errorsList.length > 0) {
@@ -96,10 +87,7 @@ const map = (checks: Check[]) => (value: any, position: string[] = []): JsonQuer
 
     return new JsonQuery(request => {
         if (request.found) {
-            return [{
-                path: request.currentPath,
-                value,
-            }];
+            return [new JsonQueryResult(obj, request.currentPath)];
         }
         return (queries as JsonQuery[])
             .map(it => it.findInternal(request))
@@ -135,10 +123,10 @@ const prop = (name: string, checkValue: Check) => (obj: any, position: string[] 
 const parseSettings = map([
     prop("services", map([
         prop("*", map([
-            prop("host", text),
+            prop("host", value("string")),
             prop("routes", list(map([
-                prop("public", text),
-                prop("private", text),
+                prop("public", value("string")),
+                prop("private", value("string")),
             ]))),
         ])),
     ])),

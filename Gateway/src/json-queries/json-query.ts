@@ -1,23 +1,20 @@
+import { JsonQueryResult } from "./json-query-result";
+
 export class JsonQuery {
     constructor(
         private readonly _handler: Query) {
     }
 
-    findInternal(request: QueryRequest): IQueryResult[] {
+    findInternal(request: QueryRequest): JsonQueryResult[] {
         return this._handler(request);
     }
 
-    findMany(path: string): IQueryResult[] {
+    findMany(path: string): JsonQueryResult[] {
         return this.findInternal(new QueryRequest(path));
     }
 }
 
-type Query = (request: QueryRequest) => IQueryResult[];
-
-export interface IQueryResult {
-    readonly path: string;
-    readonly value: any;
-}
+type Query = (request: QueryRequest) => JsonQueryResult[];
 
 class QueryRequest {
     constructor(pathStr: string) {
