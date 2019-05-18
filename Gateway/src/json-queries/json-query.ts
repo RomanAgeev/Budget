@@ -1,12 +1,14 @@
 import { JsonQueryResult } from "./json-query-result";
+import { JsonParseError } from "./json-parse-error";
 
 export class JsonQuery {
     constructor(
-        private readonly _handler: Query) {
+        private readonly _handler: JsonQueryHandler) {
     }
 
     findInternal(request: QueryRequest): JsonQueryResult[] {
-        return this._handler(request);
+        return this._handler(request)
+            .reduce((results, acc) => acc.concat(results), []);
     }
 
     findMany(path: string): JsonQueryResult[] {
@@ -14,9 +16,14 @@ export class JsonQuery {
     }
 }
 
-type Query = (request: QueryRequest) => JsonQueryResult[];
+export type JsonQueryHandler = (request: QueryRequest) => JsonQueryResult[][];
 
-class QueryRequest {
+export type JsonParse = (obj: any, path: string) => JsonParseResult;
+
+export type JsonParseResult = JsonQuery | JsonParseError[];
+
+
+export class QueryRequest {
     constructor(pathStr: string) {
         const arr = pathStr.split("/");
         for (const seg of arr) {

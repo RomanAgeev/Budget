@@ -12,7 +12,9 @@
         "max-classes-per-file": false,
         "member-ordering": false,
         "variable-name": false,
-        "member-access": false
+        "member-access": false,
+        "array-type": false,
+        "align": false
     },
     "rulesDirectory": []
 }

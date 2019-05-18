@@ -1,11 +1,8 @@
 export class JsonParseError {
     constructor(
         public readonly message: string,
-        pathArray: string[]) {
-            this.path = pathArray.join("/");
+        public readonly path: string) {
     }
-
-    public readonly path: string;
 }
 
 export const flattenErrors = (errorsList: JsonParseError[][]): JsonParseError[] =>
