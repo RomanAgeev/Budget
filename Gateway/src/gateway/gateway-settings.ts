@@ -2,6 +2,7 @@ import fs from "fs";
 import util from "util";
 import yaml from "js-yaml";
 import UrlPattern from "url-pattern";
+import { JsonParseError, flattenErrors, isJsonParseErrors, JsonQuery } from "../json-queries";
 
 let settings: any = null;
 
@@ -16,14 +17,16 @@ const ensureSettings = async (settingsPath: string): Promise<void> => {
         const settingsYaml: string = await readFileAsync(settingsPath, "utf8");
         settings = yaml.safeLoad(settingsYaml);
 
-        const settingsReducer = parseSettings(settings, []);
-        if (typeof settingsReducer === "function") {
-            const results = settingsReducer(new QueryRequest("services/*/routes/*/public"));
+        const jsonQuery = parseSettings(settings);
+        if (jsonQuery instanceof JsonQuery) {
+            const results = jsonQuery.findMany("services/*/routes/*/public");
             if (results.length > 0) {
                 console.log("public:" + JSON.stringify(results[0]));
-                const _private = settingsReducer(new QueryRequest(results[0].path + "/./private"));
+
+                const _private = jsonQuery.findMany(results[0].path + "/./private");
                 console.log("private:" + JSON.stringify(_private));
-                const host = settingsReducer(new QueryRequest(results[0].path + "/./././host"));
+
+                const host = jsonQuery.findMany(results[0].path + "/./././host");
                 console.log("host:" + JSON.stringify(host));
             }
         }
@@ -32,64 +35,15 @@ const ensureSettings = async (settingsPath: string): Promise<void> => {
 
 const readFileAsync = util.promisify(fs.readFile);
 
-type Check = (obj: any, position: string[]) => Query | ParseError[];
-type ParseError = { path: string, message: string };
-type Query = (request: QueryRequest) => IQueryResult[];
+type Check = (obj: any, position: string[]) => JsonQuery | JsonParseError[];
+
 // type QueryPredicate = (value: any) => boolean;
 
-class QueryRequest {
-    constructor(pathStr: string) {
-        const arr = pathStr.split("/");
-        for (const seg of arr) {
-            if (seg === ".") {
-                this._path.pop();
-            } else {
-                this._path.push(seg);
-            }
-        }
-    }
 
-    private readonly _path: string[] = [];
-    private _currentPath: string[] = [];
 
-    public get currentPath() {
-        return this._currentPath.join("/");
-    }
-
-    public get found(): boolean {
-        return this._index === this._path.length;
-    }
-
-    private get _index(): number {
-        return this._currentPath.length;
-    }
-
-    public goDown(name: string): boolean {
-        if (this._matchName(name)) {
-            this._currentPath.push(name);
-            return true;
-        }
-        return false;
-    }
-
-    public goUp(): void {
-        this._currentPath.pop();
-    }
-
-    private _matchName(name: string): boolean {
-        const pathName: string = this._path[this._index];
-        return pathName === "*" || pathName === name;
-    }
-}
-
-interface IQueryResult {
-    readonly path: string;
-    readonly value: any;
-}
-
-const text = (value: any, position: string[]): Query | ParseError[] => {
+const text = (value: any, position: string[] = []): JsonQuery | JsonParseError[] => {
     if (typeof value === "string") {
-        return (request: QueryRequest): IQueryResult[] => {
+        return new JsonQuery(request => {
             if (request.found) {
                 return [{
                     path: request.currentPath,
@@ -97,103 +51,85 @@ const text = (value: any, position: string[]): Query | ParseError[] => {
                 }];
             }
             return [];
-        };
+        });
     }
-    return [{
-        path: position.join("/"),
-        message: "string value is expected",
-    }];
+    return [new JsonParseError("string value is expected", position)];
 };
 
-const list = (check: Check) => (value: any, position: string[]): Query | ParseError[] => {
+const list = (check: Check) => (value: any, position: string[] = []): JsonQuery | JsonParseError[] => {
     if (value instanceof Array) {
         const queries = value.map((it, index: number) => check(it, position.concat(index.toString())));
 
-        const errors = queries.filter(it => Array.isArray(it)) as ParseError[][];
-        if (errors.length > 0) {
-            return errors.reduce((error: ParseError[], acc: ParseError[]) => acc.concat(error), []);
+        const errorsList = queries.filter(it => isJsonParseErrors(it)) as JsonParseError[][];
+        if (errorsList.length > 0) {
+            return flattenErrors(errorsList);
         }
-        // if (queries.some(it => it === null)) {
-        //     return null;
-        // }
 
-        return (request: QueryRequest): IQueryResult[] => {
+        return new JsonQuery(request => {
             if (request.found) {
                 return [{
                     path: request.currentPath,
                     value,
                 }];
             }
-            return (queries as Query[]).map((it, index: number) => {
+            return (queries as JsonQuery[]).map((it, index: number) => {
                 if (request.goDown(index.toString())) {
-                    const result = it!(request);
+                    const result = it.findInternal(request);
                     request.goUp();
                     return result;
                 }
                 return [];
             })
-            .reduce((results: IQueryResult[], acc: IQueryResult[]) => acc.concat(results), []);
-        };
+            .reduce((results, acc) => acc.concat(results), []);
+        });
     }
-    return [{
-        path: position.join("/"),
-        message: "array is expected",
-    }];
+    return [new JsonParseError("array is expected", position)];
 };
 
-const map = (checks: Check[]) => (value: any, position: string[]): Query | ParseError[] => {
+const map = (checks: Check[]) => (value: any, position: string[] = []): JsonQuery | JsonParseError[] => {
     const queries = value ? checks.map(check => check(value, position)) : [];
 
-    const errors = queries.filter(it => Array.isArray(it)) as ParseError[][];
-    if (errors.length > 0) {
-        return errors.reduce((error: ParseError[], acc: ParseError[]) => acc.concat(error), []);
+    const errorsList = queries.filter(it => isJsonParseErrors(it)) as JsonParseError[][];
+    if (errorsList.length > 0) {
+        return flattenErrors(errorsList);
     }
 
-    // if (queries.some(it => it === null)) {
-    //     return null;
-    // }
-
-    return (request: QueryRequest): IQueryResult[] => {
+    return new JsonQuery(request => {
         if (request.found) {
             return [{
                 path: request.currentPath,
                 value,
             }];
         }
-        return (queries as Query[])
-            .map(it => it!(request))
-            .reduce((results: IQueryResult[], acc: IQueryResult[]) => acc.concat(results), []);
-    };
+        return (queries as JsonQuery[])
+            .map(it => it.findInternal(request))
+            .reduce((results, acc) => acc.concat(results), []);
+    });
 };
 
-const prop = (name: string, checkValue: Check) => (obj: any, position: string[]): Query | ParseError[] => {
+const prop = (name: string, checkValue: Check) => (obj: any, position: string[] = []): JsonQuery | JsonParseError[] => {
     const names = name === "*" ? Object.getOwnPropertyNames(obj) : [name];
 
-    const queries = names.map(it => obj[it] ? checkValue(obj[it], position.concat(it)) : [{
-        path: position.join("/"),
-        message: `property ${it} is expected`,
-    }]);
+    const queries = names.map(it => obj[it] ?
+        checkValue(obj[it], position.concat(it)) :
+        [new JsonParseError(`property ${it} is expected`, position)]);
 
-    const errors = queries.filter(it => Array.isArray(it)) as ParseError[][];
-    if (errors.length > 0) {
-        return errors.reduce((error: ParseError[], acc: ParseError[]) => acc.concat(error), []);
+    const errorsList = queries.filter(it => isJsonParseErrors(it)) as JsonParseError[][];
+    if (errorsList.length > 0) {
+        return flattenErrors(errorsList);
     }
 
-    // if (queries.some(it => it === null)) {
-    //     return null;
-    // }
-
-    return (request: QueryRequest): IQueryResult[] => {
-        return (queries as Query[]).map((it, index: number) => {
+    return new JsonQuery(request => {
+        return (queries as JsonQuery[]).map((it, index: number) => {
             if (request.goDown(names[index])) {
-                const result = it!(request);
+                const result = it.findInternal(request);
                 request.goUp();
                 return result;
             }
             return [];
         })
-        .reduce((results: IQueryResult[], acc: IQueryResult[]) => acc.concat(results), []);
-    };
+        .reduce((results, acc) => acc.concat(results), []);
+    });
 };
 
 const parseSettings = map([
