@@ -7,7 +7,7 @@ export class JsonParseError {
 
 export const flattenErrors = (errorsList: JsonParseError[][]): JsonParseError[] =>
     errorsList.length > 0 ?
-        errorsList.reduce((errors: JsonParseError[], acc: JsonParseError[]) =>
+        errorsList.reduce((acc: JsonParseError[], errors: JsonParseError[]) =>
             acc.concat(errors), []) : [];
 
 export const isJsonParseErrors = (value: any): value is JsonParseError[] =>

@@ -8,7 +8,7 @@ export class JsonQuery {
 
     findInternal(request: QueryRequest): JsonQueryResult[] {
         return this._handler(request)
-            .reduce((results, acc) => acc.concat(results), []);
+            .reduce((acc, results) => acc.concat(results), []);
     }
 
     findMany(path: string): JsonQueryResult[] {
