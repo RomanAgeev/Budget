@@ -42,7 +42,7 @@ type Check = (obj: any, position: string[]) => JsonQuery | JsonParseError[];
 type valueType = "string" | "number" | "boolean";
 
 const value = (type: valueType) => (obj: any, position: string[] = []): JsonQuery | JsonParseError[] => {
-    if (typeof obj === "string") {
+    if (typeof obj === type) {
         return new JsonQuery(request => request.found ?
             [new JsonQueryResult(obj, request.currentPath)] :
             []);
