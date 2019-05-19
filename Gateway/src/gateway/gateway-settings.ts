@@ -2,7 +2,7 @@ import fs from "fs";
 import util from "util";
 import yaml from "js-yaml";
 import UrlPattern from "url-pattern";
-import { JsonQuery, value, map, prop, array } from "../json-queries";
+import { JsonQuery, value, map, prop, array } from "@ra/json-queries";
 
 let settings: any = null;
 
