@@ -3,18 +3,8 @@ services:
     host: http://localhost:5000
     routes:
       -
-        public: /api/category(/:categoryId)
-        private: /api/v1/category(/:categoryId)
+        api: /api/category(/:categoryId)
+        service: /api/v1/category(/:categoryId)
       -
-        public: /api/expense(/:expenseId)
-        private: /api/v1/expense(/:expenseId)
-
-  test:
-    host: http://test:5000
-    routes:
-      -
-        public: /api/test(/:testId)
-        private: /api/v1/test(/:testId)
-      -
-        public: /api/test2(/:test2Id)
-        private: /api/v1/test2(/:test2Id)
+        api: /api/expense(/:expenseId)
+        service: /api/v1/expense(/:expenseId)  
