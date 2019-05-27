@@ -1,14 +1,13 @@
 version: '3'
 services:
-  budget-gateway:
+  gateway:
     build: Gateway
-    image: ra/budget-gateway:0.0.1
-    container_name: ra-budget-gateway
+    image: ra/gateway:0.0.1
+    container_name: ra_gateway
     ports:
       - 8080:8080
-      - 9876:9876
-    environment:
-      EXPENSES_API_URL: http://expenses/api/v1
+    # environment:
+    #   EXPENSES_API_URL: http://expenses/api/v1
     restart: always
 
   expenses_db:
@@ -30,7 +29,7 @@ services:
     image: ra/expenses:0.0.1
     container_name: ra_expenses
     depends_on:
-      - budget-gateway
+      - gateway
       - expenses_db
     expose:
       - 80
