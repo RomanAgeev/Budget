@@ -16,41 +16,51 @@ const settingsParser = json([
     ])),
 ]);
 
-let settings: Settings | null = null;
+export const routeMatcher = (settingsPath: string) => {
+    let settings: Settings | null = null;
 
-export const routeMatcher = (settingsPath: string) => async (publicRoute: string): Promise<string | null> => {
-    await ensureSettings(settingsPath);
-
-    const apiResults: QueryResult[] = settings!("services/*/routes/*/api", api => new UrlPattern(api).match(publicRoute) !== null);
-    if (apiResults.length === 1) {
-        const serviceResults: QueryResult[] = settings!(`${apiResults[0].path}/../service`);
-        if (serviceResults.length === 1) {
-            const hostResults: QueryResult[] = settings!(`${apiResults[0].path}/../../../host`);
-            if (hostResults.length === 1) {
-                const apiPattern = new UrlPattern(apiResults[0].value);
-                const servicePattern = new UrlPattern(serviceResults[0].value);
-                const serviceUrl = servicePattern.stringify(apiPattern.match(publicRoute));
-                return hostResults[0].value + serviceUrl;
-            }
+    return async (apiUrl: string): Promise<string> => {
+        if (!settings) {
+            settings = await loadSettings(settingsPath);
         }
-    }
 
-    return null;
+        const apiRoutes: QueryResult[] = settings!("services/*/routes/*/api", api => new UrlPattern(api).match(apiUrl) !== null);
+        if (apiRoutes.length === 0) {
+            throw new Error(`No api route is found for the url: ${apiUrl}`);
+        }
+
+        const apiRoute = apiRoutes[0];
+
+        const serviceRoutes: QueryResult[] = settings!(`${apiRoute.path}/../service`);
+        if (serviceRoutes.length === 0) {
+            throw new Error(`No service route is found for the url ${apiUrl}`);
+        }
+
+        const serviceHosts: QueryResult[] = settings!(`${apiRoute.path}/../../../host`);
+        if (serviceHosts.length === 0) {
+            throw new Error(`No service host is found for the url ${apiUrl}`);
+        }
+
+        const serviceRoute = serviceRoutes[0];
+        const serviceHost = serviceHosts[0];
+
+        const apiPattern = new UrlPattern(apiRoute.value);
+        const servicePattern = new UrlPattern(serviceRoute.value);
+        return serviceHost.value + servicePattern.stringify(apiPattern.match(apiUrl));
+    };
 };
 
-const ensureSettings = async (settingsPath: string): Promise<void> => {
-    if (!settings) {
-        const settingsYaml: string = await readFileAsync(settingsPath, "utf8");
-        const settingsJson = yaml.safeLoad(settingsYaml);
-        const { query, errors } = settingsParser(settingsJson);
-        if (errors) {
-            const errorMessage = errors.reduce((acc: string, err: ParseError) =>
-                `${acc}\n${err.message} - ${err.path}`,
-                "Gateway format error:");
-            throw new Error(errorMessage);
-        }
-        settings = query;
+const loadSettings = async (settingsPath: string): Promise<Settings> => {
+    const settingsYaml: string = await readFileAsync(settingsPath, "utf8");
+    const settingsJson = yaml.safeLoad(settingsYaml);
+    const { query, errors } = settingsParser(settingsJson);
+    if (errors) {
+        const errorMessage = errors.reduce((acc: string, err: ParseError) =>
+            `${acc}\n${err.message} - ${err.path}`,
+            "Wrong gateway format:");
+        throw new Error(errorMessage);
     }
+    return query!;
 };
 
 const readFileAsync = util.promisify(fs.readFile);
