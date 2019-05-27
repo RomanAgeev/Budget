@@ -1,6 +1,6 @@
 services:
   expenses:
-    host: http://localhost:5000
+    host: ${EXPENSES_HOST-http://localhost:5000}
     routes:
       -
         api: /api/category(/:categoryId)

@@ -1,9 +1,10 @@
 FROM node:9
-WORKDIR /src
+WORKDIR /app
 
-COPY package*.json .
+COPY package*.json ./
+COPY .npmrc ./
 
-RUN npm ci --only=production
+RUN npm i
 
 COPY . .
 

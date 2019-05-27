@@ -6,8 +6,10 @@ services:
     container_name: ra_gateway
     ports:
       - 8080:8080
-    # environment:
-    #   EXPENSES_API_URL: http://expenses/api/v1
+    environment:
+      NODE_ENV: production 
+      PORT: 8080
+      EXPENSES_HOST: http://expenses
     restart: always
 
   expenses_db:
