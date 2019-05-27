@@ -16,7 +16,11 @@ export const gatewayHandler = (settingsPath: string) => {
 
         if (privateUrl) {
             const result = await request(privateUrl, req.method, req.body, e => {
-                res.status(e.response.status).send(e.response.data);
+                if (e.response) {
+                    res.status(e.response.status).send(e.response.data);
+                } else {
+                    next(new Error(`Service endpoint is unavailable : ${privateUrl}`));
+                }
             });
 
             if (result) {
