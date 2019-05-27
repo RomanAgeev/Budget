@@ -1,7 +1,7 @@
 import fs from "fs";
 import util from "util";
 import yaml from "js-yaml";
-import { Query as Settings, json, prop, obj, propAny, value, array, QueryResult } from "@ra/json-queries";
+import { Query as Settings, json, prop, obj, propAny, value, array, QueryResult, ParseError } from "@ra/json-queries";
 import UrlPattern from "url-pattern";
 
 const settingsParser = json([
@@ -44,8 +44,10 @@ const ensureSettings = async (settingsPath: string): Promise<void> => {
         const settingsJson = yaml.safeLoad(settingsYaml);
         const { query, errors } = settingsParser(settingsJson);
         if (errors) {
-            errors.forEach(error => console.error(`${error.message}\n${error.path}`));
-            return;
+            const errorMessage = errors.reduce((acc: string, err: ParseError) =>
+                `${acc}\n${err.message} - ${err.path}`,
+                "Gateway format error:");
+            throw new Error(errorMessage);
         }
         settings = query;
     }

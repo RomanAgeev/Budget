@@ -6,7 +6,13 @@ export const gatewayHandler = (settingsPath: string) => {
     const matchRoute = routeMatcher(settingsPath);
 
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const privateUrl: string | null = await matchRoute(req.url);
+        let privateUrl: string | null = null;
+        try {
+            privateUrl = await matchRoute(req.url);
+        } catch (e) {
+            next(e);
+            return;
+        }
 
         if (privateUrl) {
             const result = await request(privateUrl, req.method, req.body, e => {
