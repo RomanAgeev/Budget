@@ -2,9 +2,9 @@
   "name": "gateway",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "./node_modules/.bin/ts-node ./src/index.ts",
+    "start": "./node_modules/.bin/ts-node ./src/app.ts",
     "nodemon": "./node_modules/.bin/nodemon",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
