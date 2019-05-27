@@ -6,37 +6,33 @@ export const gatewayHandler = (settingsPath: string) => {
     const matchRoute = routeMatcher(settingsPath);
 
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        let privateUrl: string | null = null;
+        const apiUrl = req.url;
+
+        let serviceUrl: string | null = null;
         try {
-            privateUrl = await matchRoute(req.url);
+            serviceUrl = await matchRoute(apiUrl);
         } catch (e) {
             next(e);
             return;
         }
 
-        if (privateUrl) {
-            const result = await request(privateUrl, req.method, req.body, e => {
-                if (e.response) {
-                    res.status(e.response.status).send(e.response.data);
-                } else {
-                    next(new Error(`Service endpoint is unavailable : ${privateUrl}`));
-                }
+        let result: any = null;
+        try {
+            result = await axios.request({
+                url: serviceUrl!,
+                method: req.method,
+                data: req.body,
             });
 
-            if (result) {
-                res.send(result.data);
+        } catch (e) {
+            if (e.response) {
+                res.status(e.response.status).send(e.response.data);
+            } else {
+                next(new Error(`Service endpoint is unavailable for api: ${apiUrl}`));
             }
-        } else {
-            next();
+            return;
         }
-    };
-};
 
-const request = async (url: string, method: string, data: any, handleError: (e: any) => void): Promise<any> => {
-    try {
-        return await axios.request({ url, method, data });
-    } catch (e) {
-        handleError(e);
-        return null;
-    }
+        res.send(result.data);
+    };
 };
