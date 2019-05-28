@@ -5,10 +5,9 @@ services:
     image: ra/gateway:0.0.1
     container_name: ra_gateway
     ports:
-      - 8080:8080
+      - 8080:80
     environment:
-      NODE_ENV: production 
-      PORT: 8080
+      NODE_ENV: ${ENV_GATEWAY}
       EXPENSES_HOST: http://expenses
     restart: always
 
@@ -36,7 +35,7 @@ services:
     expose:
       - 80
     environment:
-      ASPNETCORE_ENVIRONMENT: Staging
+      ASPNETCORE_ENVIRONMENT: ${ENV_EXPENSES}
       EXPENSES_DB_PASSWORD: ${EXPENSES_DB_PASSWORD}
     restart: always
 

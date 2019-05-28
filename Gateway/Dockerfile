@@ -8,5 +8,7 @@ RUN npm i
 
 COPY . .
 
-EXPOSE 8080
+ENV PORT=80
+
+EXPOSE 80
 ENTRYPOINT [ "npm", "start" ]
