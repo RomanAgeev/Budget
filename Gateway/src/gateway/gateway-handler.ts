@@ -1,25 +1,35 @@
 import axios from "axios";
 import { Request, Response, NextFunction } from "express";
-import { routeMatcher } from "./gateway-settings";
+import { SettingsProvider } from "../settings";
+import { Query as Settings } from "@ra/json-queries";
+import { getServiceUrl } from "./gateway-helper";
 
-export const gatewayHandler = (settingsPath: string) => {
-    const matchRoute = routeMatcher(settingsPath);
+export const gatewayHandler = (settingsProvider: SettingsProvider) =>
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        const settings: Settings = await settingsProvider();
 
-    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const apiUrl = req.url;
 
-        let serviceUrl: string | null = null;
+        let serviceParams: { serviceUrl: string, authorize: boolean } | null = null;
         try {
-            serviceUrl = await matchRoute(apiUrl);
+            serviceParams = getServiceUrl(apiUrl, settings);
         } catch (e) {
             next(e);
             return;
         }
 
+        if (serviceParams.authorize) {
+            const tokenDecoded = (req as any).tokenDecoded;
+            if (!tokenDecoded) {
+                next(new Error("Not authenticated"));
+                return;
+            }
+        }
+
         let result: any = null;
         try {
             result = await axios.request({
-                url: serviceUrl!,
+                url: serviceParams!.serviceUrl,
                 method: req.method,
                 data: req.body,
             });
@@ -35,4 +45,3 @@ export const gatewayHandler = (settingsPath: string) => {
 
         res.send(result.data);
     };
-};

@@ -1,5 +1,6 @@
 services:
   expenses:
+    authorize: true
     host: ${EXPENSES_HOST-http://localhost:5000}
     routes:
       -
@@ -7,4 +8,7 @@ services:
         service: /api/v1/category(/:categoryId)
       -
         api: /api/expense(/:expenseId)
-        service: /api/v1/expense(/:expenseId)  
+        service: /api/v1/expense(/:expenseId)        
+
+authentication:
+  secret: ${BUDGET_GATEWAY_SECRET-dev_secret}
