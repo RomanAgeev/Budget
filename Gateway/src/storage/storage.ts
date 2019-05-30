@@ -1,6 +1,5 @@
 import { MongoClient } from "mongodb";
-import { SettingsProvider } from "../settings";
-import { Query as Settings, QueryResult } from "@ra/json-queries";
+import { SettingsProvider, Settings } from "../settings";
 import { UserModel } from "./user-model";
 
 export interface Storage {
@@ -14,22 +13,10 @@ export type StorageProvider = () => Promise<Storage>;
 export const initStorage = (settingsProvider: SettingsProvider): StorageProvider => async (): Promise<Storage> => {
     const settings: Settings = await settingsProvider();
 
-    const storageUris: QueryResult[] = settings("authentication/storage");
-    if (storageUris.length === 0) {
-        throw new Error("gateway storage is not specified");
-    }
+    const { storage, database } = settings.getStorageParams();
 
-    const storageUri: string = storageUris[0].value;
-
-    const databaseNames: QueryResult[] = settings("authentication/database");
-    if (databaseNames.length === 0) {
-        throw new Error("gateway database is not specified");
-    }
-
-    const databaseName: string = databaseNames[0].value;
-
-    const client = await new MongoClient(storageUri).connect();
-    const db = client.db(databaseName);
+    const client = await new MongoClient(storage).connect();
+    const db = client.db(database);
     const collection = db.collection("users");
 
     return {

@@ -1,18 +1,115 @@
 import fs from "fs";
 import util from "util";
 import yaml from "js-yaml";
-import { Query as Settings, json, prop, obj, propAny, value, array, propOptional, ParseError } from "@ra/json-queries";
+import { json, prop, obj, propAny, value, array, propOptional, ParseError, Query, QueryResult } from "@ra/json-queries";
+import { Predicate } from "@ra/json-queries/dist/iterate";
+
+export interface Settings {
+    getRouteParams(apiUrl: string, predicate: (api: string) => boolean): RouteParams;
+    getStorageParams(): StorageParams;
+    getSecret(): string;
+    isAuthRequired(): boolean;
+}
+
+export interface RouteParams {
+    readonly apiRoute: string;
+    readonly serviceRoute: string;
+    readonly serviceHost: string;
+    readonly authorize: boolean;
+}
+
+export interface StorageParams {
+    readonly storage: string;
+    readonly database: string;
+}
 
 export type SettingsProvider = () => Promise<Settings>;
 
-export const initSettings = (settingsPath: string) => async (): Promise<Settings> => {
-    if (!settings) {
-        settings = await loadSettings(settingsPath);
-    }
-    return settings;
+export const initSettings = (path: string): SettingsProvider => {
+    let settings: Settings | null = null;
+
+    return async (): Promise<Settings> => {
+        if (!settings) {
+            const query: Query = await loadQuery(path);
+
+            function querySingle(queryPath: string, predicate?: Predicate): QueryResult | null {
+                const results: QueryResult[] = query(queryPath, predicate);
+                return results.length > 0 ? results[0] : null;
+            }
+
+            settings = {
+                getRouteParams(apiUrl: string, predicate: (api: string) => boolean): RouteParams {
+                    const apiRoute: QueryResult | null = querySingle("services/*/routes/*/api", predicate);
+                    if (!apiRoute) {
+                        throw new Error(`No api route is found for the url: ${apiUrl}`);
+                    }
+
+                    const serviceRoute: QueryResult | null = querySingle(`${apiRoute.path}/../service`);
+                    if (!serviceRoute) {
+                        throw new Error(`No service route is found for the url ${apiUrl}`);
+                    }
+
+                    const serviceHost: QueryResult | null = querySingle(`${apiRoute.path}/../../../host`);
+                    if (!serviceHost) {
+                        throw new Error(`No service host is found for the url ${apiUrl}`);
+                    }
+
+                    const authorize: QueryResult | null = querySingle(`${apiRoute.path}/../../../authorize`);
+
+                    return {
+                        apiRoute: apiRoute.value,
+                        serviceRoute: serviceRoute.value,
+                        serviceHost: serviceHost.value,
+                        authorize: authorize !== null,
+                    };
+                },
+
+                getStorageParams(): StorageParams {
+                    const storage: QueryResult | null = querySingle("authentication/storage");
+                    if (!storage) {
+                        throw new Error("gateway storage is not specified");
+                    }
+
+                    const database: QueryResult | null = querySingle("authentication/database");
+                    if (!database) {
+                        throw new Error("gateway database is not specified");
+                    }
+
+                    return {
+                        storage: storage.value,
+                        database: database.value,
+                    };
+                },
+
+                getSecret(): string {
+                    const secret: QueryResult | null = querySingle("authentication/secret");
+                    if (!secret) {
+                        throw new Error("No Authentication secret is specified for the gateway");
+                    }
+                    return secret.value;
+                },
+
+                isAuthRequired(): boolean {
+                    return querySingle("authentication") !== null;
+                },
+            };
+        }
+        return settings;
+    };
 };
 
-let settings: Settings | null = null;
+async function loadQuery(settingsPath: string): Promise<Query> {
+    const settingsYaml: string = await readFileAsync(settingsPath, "utf8");
+    const settingsJson = yaml.safeLoad(settingsYaml);
+    const { query, errors } = settingsParser(settingsJson);
+    if (errors) {
+        const errorMessage = errors.reduce((acc: string, err: ParseError) =>
+            `${acc}\n${err.message} - ${err.path}`,
+            "Wrong gateway settings format:");
+        throw new Error(errorMessage);
+    }
+    return query!;
+}
 
 const settingsParser = json([
     prop("services", obj([
@@ -32,18 +129,4 @@ const settingsParser = json([
     ])),
 ]);
 
-const loadSettings = async (settingsPath: string): Promise<Settings> => {
-    const settingsYaml: string = await readFileAsync(settingsPath, "utf8");
-    const settingsJson = yaml.safeLoad(settingsYaml);
-    const { query, errors } = settingsParser(settingsJson);
-    if (errors) {
-        const errorMessage = errors.reduce((acc: string, err: ParseError) =>
-            `${acc}\n${err.message} - ${err.path}`,
-            "Wrong gateway settings format:");
-        throw new Error(errorMessage);
-    }
-    return query!;
-};
-
 const readFileAsync = util.promisify(fs.readFile);
-

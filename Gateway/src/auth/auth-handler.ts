@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
-import { SettingsProvider } from "../settings";
-import { Query as Settings } from "@ra/json-queries";
-import { authRequired, getAuthSecret } from "./auth-helper";
+import { SettingsProvider, Settings } from "../settings";
 
 const bearerPrefix = "Bearer ";
 
@@ -10,7 +8,7 @@ export const authHandler = (settingsProvider: SettingsProvider) =>
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const settings: Settings = await settingsProvider();
 
-        if (!authRequired(settings)) {
+        if (!settings.isAuthRequired()) {
             next();
             return;
         }
@@ -27,7 +25,7 @@ export const authHandler = (settingsProvider: SettingsProvider) =>
             return;
         }
 
-        const secret: string = getAuthSecret(settings);
+        const secret: string = settings.getSecret();
 
         jwt.verify(token, secret, (err, tokenDecoded) => {
             if (err) {

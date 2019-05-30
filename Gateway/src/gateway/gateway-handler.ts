@@ -1,8 +1,7 @@
 import axios from "axios";
 import { Request, Response, NextFunction } from "express";
-import { SettingsProvider } from "../settings";
-import { Query as Settings } from "@ra/json-queries";
-import { getServiceUrl } from "./gateway-helper";
+import { SettingsProvider, Settings, RouteParams } from "../settings";
+import UrlPattern from "url-pattern";
 
 export const gatewayHandler = (settingsProvider: SettingsProvider) =>
     async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -10,15 +9,17 @@ export const gatewayHandler = (settingsProvider: SettingsProvider) =>
 
         const apiUrl = req.url;
 
-        let serviceParams: { serviceUrl: string, authorize: boolean } | null = null;
+        let routeParams: RouteParams;
         try {
-            serviceParams = getServiceUrl(apiUrl, settings);
+            routeParams = settings.getRouteParams(apiUrl, api => new UrlPattern(api).match(apiUrl) !== null);
         } catch (e) {
             next(e);
             return;
         }
 
-        if (serviceParams.authorize) {
+        const { apiRoute, serviceRoute, serviceHost, authorize } = routeParams;
+
+        if (authorize) {
             const tokenDecoded = (req as any).tokenDecoded;
             if (!tokenDecoded) {
                 next(new Error("Not authenticated"));
@@ -26,10 +27,14 @@ export const gatewayHandler = (settingsProvider: SettingsProvider) =>
             }
         }
 
+        const apiPattern = new UrlPattern(apiRoute);
+        const servicePattern = new UrlPattern(serviceRoute);
+        const serviceUrl = serviceHost + servicePattern.stringify(apiPattern.match(apiUrl));
+
         let result: any = null;
         try {
             result = await axios.request({
-                url: serviceParams!.serviceUrl,
+                url: serviceUrl,
                 method: req.method,
                 data: req.body,
             });

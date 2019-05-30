@@ -1,8 +1,6 @@
 import { StorageProvider, UserModel, validatePassword, Storage } from "./storage";
-import { SettingsProvider } from "./settings";
-import { Query as Settings } from "@ra/json-queries";
+import { SettingsProvider, Settings } from "./settings";
 import { Request, Response } from "express";
-import { getAuthSecret } from "./auth/auth-helper";
 import * as jwt from "jsonwebtoken";
 
 export const signIn = (settingsProvider: SettingsProvider, storageProvider: StorageProvider) => async (req: Request, res: Response) => {
@@ -25,7 +23,7 @@ export const signIn = (settingsProvider: SettingsProvider, storageProvider: Stor
         }
 
         if (validatePassword(password, user)) {
-            const secret = getAuthSecret(settings);
+            const secret = settings.getSecret();
 
             const token = jwt.sign({ username }, secret, { expiresIn: "24h" });
             res.json({ token });
