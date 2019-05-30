@@ -1,5 +1,4 @@
-import { StorageProvider, UserModel, validatePassword } from "./storage";
-import { MongoClient } from "mongodb";
+import { StorageProvider, UserModel, validatePassword, Storage } from "./storage";
 import { SettingsProvider } from "./settings";
 import { Query as Settings } from "@ra/json-queries";
 import { Request, Response } from "express";
@@ -16,19 +15,14 @@ export const signIn = (settingsProvider: SettingsProvider, storageProvider: Stor
     }
 
     const settings: Settings = await settingsProvider();
-    const storage: MongoClient = await storageProvider();
+    const storage: Storage = await storageProvider();
 
-    await storage.connect();
     try {
-        const db = storage.db("budget_gateway_dev"); // TODO: get rid of constant database name
-        const usersCollection = db.collection("users");
-        const users = await usersCollection.find({ username }).toArray();
-        if (users.length === 0) {
+        const user: UserModel | null = await storage.getUser(username);
+        if (!user) {
             res.send(400);
             return;
         }
-
-        const user: UserModel = users[0];
 
         if (validatePassword(password, user)) {
             const secret = getAuthSecret(settings);
