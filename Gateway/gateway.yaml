@@ -12,3 +12,4 @@ services:
 
 authentication:
   secret: ${BUDGET_GATEWAY_SECRET-dev_secret}
+  storage: ${GATEWAY_STORAGE_URI-mongodb://dev:dev@localhost:27017/budget_gateway_dev}

@@ -27,6 +27,7 @@ const settingsParser = json([
     ])),
     propOptional("authentication", obj([
         prop("secret", value("string")),
+        prop("storage", value("string")),
     ])),
 ]);
 
