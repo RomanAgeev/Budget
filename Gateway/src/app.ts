@@ -2,10 +2,10 @@ import express from "express";
 import { Express } from "express";
 import bodyParser from "body-parser";
 import path from "path";
-import { gatewayHandler } from "./gateway";
+import { gatewayHandler } from "./gateway-handler";
 import { initStorage } from "./storage";
 import { initSettings } from "./settings";
-import { authHandler } from "./auth";
+import { authHandler } from "./auth-handler";
 import { signIn } from "./sign-in";
 import { signUp } from "./sign-up";
 

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
-import { SettingsProvider, Settings } from "../settings";
+import { SettingsProvider, Settings } from "./settings";
 
 const bearerPrefix = "Bearer ";
 

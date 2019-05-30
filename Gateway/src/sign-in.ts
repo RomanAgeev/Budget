@@ -28,7 +28,7 @@ export const signIn = (settingsProvider: SettingsProvider, storageProvider: Stor
             const token = jwt.sign({ username }, secret, { expiresIn: "24h" });
             res.json({ token });
         } else {
-            res.send(403);
+            res.send(400);
         }
     } finally {
         await storage.close();

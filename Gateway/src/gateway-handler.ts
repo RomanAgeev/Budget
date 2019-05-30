@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Request, Response, NextFunction } from "express";
-import { SettingsProvider, Settings, RouteParams } from "../settings";
+import { SettingsProvider, Settings, RouteParams } from "./settings";
 import UrlPattern from "url-pattern";
 
 export const gatewayHandler = (settingsProvider: SettingsProvider) =>
