@@ -21,8 +21,15 @@ export const initStorage = (settingsProvider: SettingsProvider): StorageProvider
 
     const storageUri: string = storageUris[0].value;
 
+    const databaseNames: QueryResult[] = settings("authentication/database");
+    if (databaseNames.length === 0) {
+        throw new Error("gateway database is not specified");
+    }
+
+    const databaseName: string = databaseNames[0].value;
+
     const client = await new MongoClient(storageUri).connect();
-    const db = client.db("budget_gateway_dev"); // TODO: get rid of constant database name
+    const db = client.db(databaseName);
     const collection = db.collection("users");
 
     return {
