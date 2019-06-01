@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { SettingsProvider } from "./settings";
-import { StorageProvider, createUser, Storage, UserModel } from "./storage";
+import { createUser, Storage, UserModel } from "./storage";
 
-export const signUp = (settingsProvider: SettingsProvider, storageProvider: StorageProvider) => async (req: Request, res: Response) => {
+export const signUp = (storage: Storage) => async (req: Request, res: Response) => {
     const username: string = req.body.username;
     const password: string = req.body.password;
 
@@ -10,8 +9,6 @@ export const signUp = (settingsProvider: SettingsProvider, storageProvider: Stor
         res.send(400);
         return;
     }
-
-    const storage: Storage = await storageProvider();
 
     try {
         let user: UserModel | null = await storage.getUser(username);

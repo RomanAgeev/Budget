@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { SettingsProvider, Settings } from "../settings";
+import { Settings } from "../settings";
 import { UserModel } from "./user-model";
 
 export interface Storage {
@@ -8,11 +8,7 @@ export interface Storage {
     close(): Promise<void>;
 }
 
-export type StorageProvider = () => Promise<Storage>;
-
-export const initStorage = (settingsProvider: SettingsProvider): StorageProvider => async (): Promise<Storage> => {
-    const settings: Settings = await settingsProvider();
-
+export async function initStorage(settings: Settings): Promise<Storage> {
     const { storage, database } = settings.getStorageParams();
 
     const client = await new MongoClient(storage).connect();
@@ -33,4 +29,4 @@ export const initStorage = (settingsProvider: SettingsProvider): StorageProvider
             await client.close();
         },
     };
-};
+}

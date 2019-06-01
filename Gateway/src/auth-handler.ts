@@ -1,13 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
-import { SettingsProvider, Settings } from "./settings";
+import { Settings } from "./settings";
 
 const bearerPrefix = "Bearer ";
 
-export const authHandler = (settingsProvider: SettingsProvider) =>
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const settings: Settings = await settingsProvider();
-
+export const authHandler = (settings: Settings) =>
+    (req: Request, res: Response, next: NextFunction) => {
         if (!settings.isAuthRequired()) {
             next();
             return;

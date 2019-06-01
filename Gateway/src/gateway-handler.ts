@@ -1,12 +1,10 @@
 import axios from "axios";
 import { Request, Response, NextFunction } from "express";
-import { SettingsProvider, Settings, RouteParams } from "./settings";
+import { Settings, RouteParams } from "./settings";
 import UrlPattern from "url-pattern";
 
-export const gatewayHandler = (settingsProvider: SettingsProvider) =>
-    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        const settings: Settings = await settingsProvider();
-
+export const gatewayHandler = (settings: Settings) =>
+    async (req: Request, res: Response, next: NextFunction) => {
         const apiUrl = req.url;
 
         let routeParams: RouteParams;

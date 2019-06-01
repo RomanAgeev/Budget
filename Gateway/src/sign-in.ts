@@ -1,9 +1,9 @@
-import { StorageProvider, UserModel, validatePassword, Storage } from "./storage";
-import { SettingsProvider, Settings } from "./settings";
+import { UserModel, validatePassword, Storage } from "./storage";
+import { Settings } from "./settings";
 import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 
-export const signIn = (settingsProvider: SettingsProvider, storageProvider: StorageProvider) => async (req: Request, res: Response) => {
+export const signIn = (settings: Settings, storage: Storage) => async (req: Request, res: Response) => {
     const username: string = req.body.username;
     const password: string = req.body.password;
 
@@ -11,9 +11,6 @@ export const signIn = (settingsProvider: SettingsProvider, storageProvider: Stor
         res.send(400);
         return;
     }
-
-    const settings: Settings = await settingsProvider();
-    const storage: Storage = await storageProvider();
 
     try {
         const user: UserModel | null = await storage.getUser(username);
