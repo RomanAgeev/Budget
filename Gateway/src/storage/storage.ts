@@ -1,13 +1,13 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, ReplaceWriteOpResult, WriteOpResult } from "mongodb";
 import { Settings } from "../settings";
 import { UserModel, UserUpdateModel } from "./user-model";
 
 export interface Storage {
     getUsers(): Promise<UserModel[]>;
     getUser(username: string): Promise<UserModel | null>;
-    addUser(user: UserModel): Promise<void>;
-    updateUser(username: string, user: UserUpdateModel): Promise<void>;
-    deleteUser(username: string): Promise<void>;
+    addUser(user: UserModel): Promise<boolean>;
+    updateUser(username: string, user: UserUpdateModel): Promise<boolean>;
+    deleteUser(username: string): Promise<boolean>;
     close(): Promise<void>;
 }
 
@@ -28,17 +28,20 @@ export async function initStorage(settings: Settings): Promise<Storage> {
             return users.length > 0 ? users[0] : null;
         },
 
-        async addUser(user: UserModel): Promise<void> {
-            await collection.insertOne(user);
+        async addUser(user: UserModel): Promise<boolean> {
+            const op = await collection.insertOne(user);
+            return op.result.n === 1;
         },
 
-        async updateUser(username: string, updateModel: UserUpdateModel): Promise<void> {
+        async updateUser(username: string, updateModel: UserUpdateModel): Promise<boolean> {
             const { enabled, admin } = updateModel;
-            await collection.replaceOne({ username }, { $set: { enabled, admin } });
+            const op = await collection.replaceOne({ username }, { $set: { enabled, admin } });
+            return op.result.n === 1;
         },
 
-        async deleteUser(username: string): Promise<void> {
-            await collection.remove({ username });
+        async deleteUser(username: string): Promise<boolean> {
+            const op = await collection.deleteOne({ username });
+            return op.result.n === 1;
         },
 
         async close(): Promise<void> {

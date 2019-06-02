@@ -1,29 +1,32 @@
-import { UserModel, validatePassword, Storage } from "./storage";
+import { UserModel, Storage, createHash } from "./storage";
 import { Settings } from "./settings";
 import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
+import { invalidCredentials } from "./utils";
 
 export const signIn = (settings: Settings, storage: Storage) => async (req: Request, res: Response) => {
     const username: string = req.body.username;
     const password: string = req.body.password;
 
     if (!username || !password) {
-        res.send(400);
+        invalidCredentials(res);
         return;
     }
 
     const user: UserModel | null = await storage.getUser(username);
     if (!user) {
-        res.send(400);
+        invalidCredentials(res);
         return;
     }
 
-    if (validatePassword(password, user)) {
-        const secret = settings.getSecret();
+    const hash = createHash(password, user.salt);
 
-        const token = jwt.sign({ username }, secret, { expiresIn: "24h" });
-        res.json({ token });
-    } else {
-        res.send(400);
+    if (hash !== user.hash) {
+        invalidCredentials(res);
+        return;
     }
+
+    const secret = settings.getSecret();
+    const token = jwt.sign({ username }, secret, { expiresIn: "24h" });
+    res.json({ token });
 };

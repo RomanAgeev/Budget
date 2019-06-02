@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { createUser, Storage, UserModel } from "./storage";
+import { Storage, UserModel, createSalt, createHash } from "./storage";
+import { badRequest, okResult } from "./utils";
 
 export const signUp = (storage: Storage) => async (req: Request, res: Response) => {
     const email: string = req.body.email;
@@ -7,21 +8,33 @@ export const signUp = (storage: Storage) => async (req: Request, res: Response) 
     const password: string = req.body.password;
 
     if (!email || !username || !password) {
-        res.send(400);
+        badRequest(res, "no username or password are specified");
         return;
     }
 
-    let user: UserModel | null = await storage.getUser(username);
+    const user: UserModel | null = await storage.getUser(username);
     if (user) {
-        res.send(400);
+        badRequest(res, `${username} user already exists`);
         return;
     }
 
-    user = createUser(username, email, password);
+    const salt = createSalt();
+    const hash = createHash(password, salt);
 
-    await storage.addUser(user);
+    const newUser: UserModel = {
+        username,
+        email,
+        hash,
+        salt,
+        enabled: false,
+        admin: false,
+    };
 
-    // TODO: check insert result
+    const success: boolean = await storage.addUser(newUser);
+    if (!success) {
+        badRequest(res, `failed to sign up ${username} user`);
+        return;
+    }
 
-    res.send(200);
+    okResult(res);
 };
