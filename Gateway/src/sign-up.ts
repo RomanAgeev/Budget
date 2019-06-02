@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import { createUser, Storage, UserModel } from "./storage";
 
 export const signUp = (storage: Storage) => async (req: Request, res: Response) => {
-    const username: string = req.body.username;
+    const email: string = req.body.email;
+    const username: string = req.body.username || email;
     const password: string = req.body.password;
 
-    if (!username || !password) {
+    if (!email || !username || !password) {
         res.send(400);
         return;
     }
@@ -16,7 +17,7 @@ export const signUp = (storage: Storage) => async (req: Request, res: Response) 
         return;
     }
 
-    user = createUser(username, password);
+    user = createUser(username, email, password);
 
     await storage.addUser(user);
 

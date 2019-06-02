@@ -2,18 +2,43 @@ import * as crypto from "crypto";
 
 export interface UserModel {
     username: string;
+    email: string;
     hash: string;
     salt: string;
+    enabled: boolean;
+    admin: boolean;
 }
 
-export function createUser(username: string, password: string): UserModel {
+export interface UserUpdateModel {
+    enabled: boolean;
+    admin: boolean;
+}
+
+export interface UserViewModel {
+    username: string;
+    enabled: boolean;
+    admin: boolean;
+}
+
+export function userViewModel(user: UserModel): UserViewModel {
+    return {
+        username: user.username,
+        enabled: user.enabled,
+        admin: user.admin,
+    };
+}
+
+export function createUser(username: string, email: string, password: string): UserModel {
     const salt = createSalt();
     const hash = createHash(password, salt);
 
     return {
         username,
+        email,
         hash,
         salt,
+        enabled: false,
+        admin: false,
     };
 }
 

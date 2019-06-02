@@ -9,6 +9,7 @@ import { initSettings, Settings } from "./settings";
 import { authHandler } from "./auth-handler";
 import { signIn } from "./sign-in";
 import { signUp } from "./sign-up";
+import { admin } from "./admin";
 
 // tslint:disable: no-console
 
@@ -26,6 +27,8 @@ process.on("unhandledRejection", (err: any) => {
 
     const settings: Settings = await initSettings(path.resolve(__dirname, "../gateway.yaml"));
     const storage: Storage = await initStorage(settings);
+
+    app.use("/admin", admin(storage));
 
     app.post("/signin", signIn(settings, storage));
     app.post("/signup", signUp(storage));
