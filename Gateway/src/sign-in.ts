@@ -1,4 +1,5 @@
-import { UserModel, Storage, createHash } from "./storage";
+import { UserModel, Storage } from "./storage";
+import { createHash } from "./password";
 import { Settings } from "./settings";
 import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
@@ -27,6 +28,6 @@ export const signIn = (settings: Settings, storage: Storage) => async (req: Requ
     }
 
     const secret = settings.getSecret();
-    const token = jwt.sign({ username }, secret, { expiresIn: "24h" });
+    const token = jwt.sign({ username, admin: user.admin }, secret, { expiresIn: "24h" });
     res.json({ token });
 };

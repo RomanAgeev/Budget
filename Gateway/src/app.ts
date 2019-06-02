@@ -28,12 +28,12 @@ process.on("unhandledRejection", (err: any) => {
     const settings: Settings = await initSettings(path.resolve(__dirname, "../gateway.yaml"));
     const storage: Storage = await initStorage(settings);
 
-    app.use("/admin", admin(storage));
+    app.use("/admin", authHandler(settings, true), admin(storage));
 
     app.post("/signin", signIn(settings, storage));
     app.post("/signup", signUp(storage));
 
-    app.use(authHandler(settings));
+    app.use(authHandler(settings, false));
     app.use(gatewayHandler(settings));
 
     const port: number = Number(process.env.PORT) || 3000;
