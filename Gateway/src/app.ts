@@ -37,7 +37,7 @@ process.on("unhandledRejection", (err: any) => {
 
     const server: Server = app.listen(port, () => console.log(`Gateway is listening on port ${port}...`));
 
-    function gracefulExit(err: any) {
+    function gracefulExit() {
         console.log("Gateway is gracefully closing...");
 
         server.close(async () => {
