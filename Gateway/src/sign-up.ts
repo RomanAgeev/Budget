@@ -10,21 +10,17 @@ export const signUp = (storage: Storage) => async (req: Request, res: Response) 
         return;
     }
 
-    try {
-        let user: UserModel | null = await storage.getUser(username);
-        if (user) {
-            res.send(400);
-            return;
-        }
-
-        user = createUser(username, password);
-
-        await storage.addUser(user);
-
-        // TODO: check insert result
-
-        res.send(200);
-    } finally {
-        await storage.close();
+    let user: UserModel | null = await storage.getUser(username);
+    if (user) {
+        res.send(400);
+        return;
     }
+
+    user = createUser(username, password);
+
+    await storage.addUser(user);
+
+    // TODO: check insert result
+
+    res.send(200);
 };
