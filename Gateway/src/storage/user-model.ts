@@ -1,6 +1,5 @@
 export interface UserModel {
     username: string;
-    email: string;
     hash: string;
     salt: string;
     enabled: boolean;

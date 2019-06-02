@@ -3,11 +3,10 @@ import { Storage, UserModel, createSalt, createHash } from "./storage";
 import { badRequest, okResult } from "./utils";
 
 export const signUp = (storage: Storage) => async (req: Request, res: Response) => {
-    const email: string = req.body.email;
-    const username: string = req.body.username || email;
+    const username: string = req.body.username;
     const password: string = req.body.password;
 
-    if (!email || !username || !password) {
+    if (!username || !password) {
         badRequest(res, "no username or password are specified");
         return;
     }
@@ -23,7 +22,6 @@ export const signUp = (storage: Storage) => async (req: Request, res: Response) 
 
     const newUser: UserModel = {
         username,
-        email,
         hash,
         salt,
         enabled: false,
