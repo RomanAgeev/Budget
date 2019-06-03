@@ -6,10 +6,14 @@ import { Predicate } from "@ra/json-queries/dist/iterate";
 
 export interface Settings {
     getRouteParams(apiUrl: string, predicate: (api: string) => boolean): RouteParams;
-    getStorageParams(): StorageParams;
+    getStorageSettings(): StorageSettings | null;
+}
+
+export interface StorageSettings {
+    getServer(): string;
+    getDatabase(): string;
     getSecret(): string;
     getRootPassword(): string;
-    adminEnabled(): boolean;
 }
 
 export interface RouteParams {
@@ -31,6 +35,41 @@ export async function initSettings(path: string): Promise<Settings> {
         const results: QueryResult[] = query(queryPath, predicate);
         return results.length > 0 ? results[0] : null;
     }
+
+    const storageSettings: StorageSettings = {
+        getServer(): string {
+            const server: QueryResult | null = querySingle("storage/server");
+            if (!server) {
+                throw new Error("gateway storage server is not specified");
+            }
+
+            return server.value;
+        },
+
+        getDatabase(): string {
+            const database: QueryResult | null = querySingle("storage/database");
+            if (!database) {
+                throw new Error("gateway database is not specified");
+            }
+            return database.value;
+        },
+
+        getSecret(): string {
+            const secret: QueryResult | null = querySingle("storage/secret");
+            if (!secret) {
+                throw new Error("No Authentication secret is specified for the gateway");
+            }
+            return secret.value;
+        },
+
+        getRootPassword(): string {
+            const rootPassword: QueryResult | null = querySingle("storage/root_password");
+            if (!rootPassword) {
+                throw new Error("No Root password is specified for the gateway");
+            }
+            return rootPassword.value;
+        },
+    };
 
     return {
         getRouteParams(apiUrl: string, predicate: (api: string) => boolean): RouteParams {
@@ -59,41 +98,9 @@ export async function initSettings(path: string): Promise<Settings> {
             };
         },
 
-        getStorageParams(): StorageParams {
-            const storage: QueryResult | null = querySingle("admin/server");
-            if (!storage) {
-                throw new Error("gateway db server is not specified");
-            }
-
-            const database: QueryResult | null = querySingle("admin/database");
-            if (!database) {
-                throw new Error("gateway database is not specified");
-            }
-
-            return {
-                server: storage.value,
-                database: database.value,
-            };
-        },
-
-        getSecret(): string {
-            const secret: QueryResult | null = querySingle("admin/secret");
-            if (!secret) {
-                throw new Error("No Authentication secret is specified for the gateway");
-            }
-            return secret.value;
-        },
-
-        getRootPassword(): string {
-            const rootPassword: QueryResult | null = querySingle("admin/root_password");
-            if (!rootPassword) {
-                throw new Error("No Root password is specified for the gateway");
-            }
-            return rootPassword.value;
-        },
-
-        adminEnabled(): boolean {
-            return querySingle("admin") !== null;
+        getStorageSettings(): StorageSettings | null {
+            const storage: QueryResult | null = querySingle("storage");
+            return storage !== null ? storageSettings : null;
         },
     };
 }
@@ -122,7 +129,7 @@ const settingsParser = json([
             ]))),
         ])),
     ])),
-    propOptional("admin", obj([
+    propOptional("storage", obj([
         prop("secret", value("string")),
         prop("server", value("string")),
         prop("database", value("string")),

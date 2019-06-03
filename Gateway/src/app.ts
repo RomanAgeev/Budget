@@ -5,12 +5,11 @@ import bodyParser from "body-parser";
 import path from "path";
 import { gatewayHandler } from "./gateway-handler";
 import { initStorage, Storage } from "./storage";
-import { initSettings, Settings } from "./settings";
+import { initSettings, Settings, StorageSettings } from "./settings";
 import { authHandler } from "./auth-handler";
 import { signIn } from "./sign-in";
 import { signUp } from "./sign-up";
 import { admin } from "./admin";
-import { ensureRoot } from "./root";
 
 // tslint:disable: no-console
 
@@ -29,14 +28,12 @@ process.on("unhandledRejection", (err: any) => {
     const settings: Settings = await initSettings(path.resolve(__dirname, "../gateway.yaml"));
 
     let storage: Storage | null = null;
-    if (settings.adminEnabled()) {
-        const storageParams = settings.getStorageParams();
 
-        storage = await initStorage(storageParams.server, storageParams.database);
+    const storageSettings: StorageSettings | null = settings.getStorageSettings();
+    if (storageSettings) {
+        storage = await initStorage(storageSettings);
 
-        await ensureRoot(settings, storage);
-
-        const secret: string = settings.getSecret();
+        const secret: string = storageSettings.getSecret();
 
         app.use("/admin", authHandler(secret, true), admin(storage));
         app.post("/signin", signIn(secret, storage));

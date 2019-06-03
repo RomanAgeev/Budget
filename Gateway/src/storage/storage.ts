@@ -1,6 +1,6 @@
 import { MongoClient, ReplaceWriteOpResult, WriteOpResult } from "mongodb";
-import { Settings } from "../settings";
-import { UserModel, UserUpdateModel } from "./user-model";
+import { Settings, StorageSettings } from "../settings";
+import { UserModel, UserUpdateModel, rootUsername, createRoot } from "./user-model";
 
 export interface Storage {
     getUsers(): Promise<UserModel[]>;
@@ -11,7 +11,25 @@ export interface Storage {
     close(): Promise<void>;
 }
 
-export async function initStorage(storage: string, database: string): Promise<Storage> {
+export async function initStorage(settings: StorageSettings): Promise<Storage> {
+    const server: string = settings.getServer();
+    const database: string = settings.getDatabase();
+
+    const storage: Storage = await openStorage(server, database);
+
+    const root: UserModel | null = await storage.getUser(rootUsername);
+    if (!root) {
+        const rootPassword = settings.getRootPassword();
+        const success = await storage.addUser(createRoot(rootPassword));
+        if (!success) {
+            throw new Error("failed to create a root user");
+        }
+    }
+
+    return storage;
+}
+
+async function openStorage(storage: string, database: string): Promise<Storage> {
     const client = await new MongoClient(storage).connect();
     const db = client.db(database);
     const collection = db.collection("users");
