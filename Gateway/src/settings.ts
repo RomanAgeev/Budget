@@ -13,7 +13,7 @@ export interface StorageSettings {
     getServer(): string;
     getDatabase(): string;
     getSecret(): string;
-    getRootPassword(): string;
+    getRootpass(): string;
 }
 
 export interface RouteParams {
@@ -64,8 +64,8 @@ export async function initSettings(path: string): Promise<Settings> {
             return secret.value;
         },
 
-        getRootPassword(): string {
-            const rootPassword: QueryResult | null = querySingle(`${storagePath}/root_password`);
+        getRootpass(): string {
+            const rootPassword: QueryResult | null = querySingle(`${storagePath}/rootpass`);
             if (!rootPassword) {
                 throw new Error("No root password is specified for the gateway");
             }
@@ -135,7 +135,7 @@ const settingsParser = json([
         prop("secret", value("string")),
         prop("server", value("string")),
         prop("database", value("string")),
-        prop("root_password", value("string")),
+        prop("rootpass", value("string")),
     ])),
 ]);
 

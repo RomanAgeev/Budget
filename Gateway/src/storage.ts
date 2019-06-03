@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import { StorageSettings } from "./settings";
-import { UserModel, UserUpdateModel, rootUsername, createRoot } from "./user-model";
+import { UserModel, UserUpdateModel, rootname, createRoot } from "./user-model";
 
 export interface Storage {
     getUsers(): Promise<UserModel[]>;
@@ -17,10 +17,10 @@ export async function initStorage(settings: StorageSettings): Promise<Storage> {
 
     const storage: Storage = await openStorage(server, database);
 
-    const root: UserModel | null = await storage.getUser(rootUsername);
+    const root: UserModel | null = await storage.getUser(rootname);
     if (!root) {
-        const rootPassword = settings.getRootPassword();
-        const success = await storage.addUser(createRoot(rootPassword));
+        const rootpass = settings.getRootpass();
+        const success = await storage.addUser(createRoot(rootpass));
         if (!success) {
             throw new Error("failed to create a root user");
         }

@@ -27,10 +27,10 @@ export function userViewModel(user: UserModel): UserViewModel {
     };
 }
 
-export const rootUsername = "__root__";
+export const rootname = "__root__";
 
 export const createUser = (username: string, password: string): UserModel => createUserInternal(username, password, false, false);
-export const createRoot = (rootPassword: string) => createUserInternal(rootUsername, rootPassword, true, true);
+export const createRoot = (rootpass: string) => createUserInternal(rootname, rootpass, true, true);
 
 function createUserInternal(username: string, password: string, enabled: boolean, admin: boolean): UserModel {
     const salt = createSalt();
