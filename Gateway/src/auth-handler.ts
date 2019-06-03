@@ -28,7 +28,7 @@ export const authHandler = (secret: string, adminOnly: boolean) =>
 
             const payload = tokenDecoded as TokenPayload;
 
-            if (adminOnly && !payload.admin) {
+            if (!payload.enabled || (adminOnly && !payload.admin)) {
                 forbidden(res);
                 return;
             }

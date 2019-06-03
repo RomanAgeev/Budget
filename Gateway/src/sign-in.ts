@@ -4,6 +4,7 @@ import { createHash } from "./password";
 import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { invalidCredentials } from "./utils";
+import { TokenPayload } from "./token";
 
 export const signIn = (secret: string, storage: Storage) => async (req: Request, res: Response) => {
     const username: string = req.body.username;
@@ -27,6 +28,12 @@ export const signIn = (secret: string, storage: Storage) => async (req: Request,
         return;
     }
 
-    const token = jwt.sign({ username, admin: user.admin }, secret, { expiresIn: "24h" });
+    const payload: TokenPayload = {
+        username,
+        enabled: user.enabled,
+        admin: user.admin,
+    };
+
+    const token = jwt.sign(payload, secret, { expiresIn: "24h" });
     res.json({ token });
 };
