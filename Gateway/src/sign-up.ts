@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Storage, UserModel, createUser } from "./storage";
-import { createSalt, createHash } from "./password";
+import { Storage } from "./storage";
+import { UserModel, createUser } from "./user-model";
 import { badRequest, okResult } from "./utils";
 
 export const signUp = (storage: Storage) => async (req: Request, res: Response) => {

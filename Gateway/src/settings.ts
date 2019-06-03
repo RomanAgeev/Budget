@@ -28,6 +28,8 @@ export interface StorageParams {
     readonly database: string;
 }
 
+const storagePath = "storage";
+
 export async function initSettings(path: string): Promise<Settings> {
     const query: Query = await loadQuery(path);
 
@@ -38,7 +40,7 @@ export async function initSettings(path: string): Promise<Settings> {
 
     const storageSettings: StorageSettings = {
         getServer(): string {
-            const server: QueryResult | null = querySingle("storage/server");
+            const server: QueryResult | null = querySingle(`${storagePath}/server`);
             if (!server) {
                 throw new Error("gateway storage server is not specified");
             }
@@ -47,25 +49,25 @@ export async function initSettings(path: string): Promise<Settings> {
         },
 
         getDatabase(): string {
-            const database: QueryResult | null = querySingle("storage/database");
+            const database: QueryResult | null = querySingle(`${storagePath}/database`);
             if (!database) {
-                throw new Error("gateway database is not specified");
+                throw new Error("gateway storage database is not specified");
             }
             return database.value;
         },
 
         getSecret(): string {
-            const secret: QueryResult | null = querySingle("storage/secret");
+            const secret: QueryResult | null = querySingle(`${storagePath}/secret`);
             if (!secret) {
-                throw new Error("No Authentication secret is specified for the gateway");
+                throw new Error("No authentication secret is specified for the gateway");
             }
             return secret.value;
         },
 
         getRootPassword(): string {
-            const rootPassword: QueryResult | null = querySingle("storage/root_password");
+            const rootPassword: QueryResult | null = querySingle(`${storagePath}/root_password`);
             if (!rootPassword) {
-                throw new Error("No Root password is specified for the gateway");
+                throw new Error("No root password is specified for the gateway");
             }
             return rootPassword.value;
         },
@@ -99,7 +101,7 @@ export async function initSettings(path: string): Promise<Settings> {
         },
 
         getStorageSettings(): StorageSettings | null {
-            const storage: QueryResult | null = querySingle("storage");
+            const storage: QueryResult | null = querySingle(storagePath);
             return storage !== null ? storageSettings : null;
         },
     };
@@ -129,7 +131,7 @@ const settingsParser = json([
             ]))),
         ])),
     ])),
-    propOptional("storage", obj([
+    propOptional(storagePath, obj([
         prop("secret", value("string")),
         prop("server", value("string")),
         prop("database", value("string")),

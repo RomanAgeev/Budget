@@ -1,6 +1,6 @@
-import { UserModel, Storage } from "./storage";
+import { Storage } from "./storage";
+import { UserModel } from "./user-model";
 import { createHash } from "./password";
-import { Settings } from "./settings";
 import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { invalidCredentials } from "./utils";

@@ -1,4 +1,4 @@
-import { createSalt, createHash } from "../password";
+import { createSalt, createHash } from "./password";
 
 export interface UserModel {
     username: string;

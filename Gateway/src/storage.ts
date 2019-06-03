@@ -1,5 +1,5 @@
-import { MongoClient, ReplaceWriteOpResult, WriteOpResult } from "mongodb";
-import { Settings, StorageSettings } from "../settings";
+import { MongoClient } from "mongodb";
+import { StorageSettings } from "./settings";
 import { UserModel, UserUpdateModel, rootUsername, createRoot } from "./user-model";
 
 export interface Storage {

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
-import { Storage, UserModel, UserUpdateModel, userViewModel, rootUsername } from "./storage";
+import { Storage } from "./storage";
+import { UserModel, UserUpdateModel, userViewModel, rootUsername } from "./user-model";
 import { badRequest, okResult } from "./utils";
 
 export const admin = (storage: Storage) =>
