@@ -1,7 +1,6 @@
 import { Router, Request, Response } from "express";
-import { Storage, UserModel, UserUpdateModel, userViewModel, UserViewModel } from "./storage";
+import { Storage, UserModel, UserUpdateModel, userViewModel, rootUsername } from "./storage";
 import { badRequest, okResult } from "./utils";
-import { rootAdminName } from "./root-admin";
 
 export const admin = (storage: Storage) =>
     Router()
@@ -13,7 +12,7 @@ export const admin = (storage: Storage) =>
         .put("/users/:username", async (req: Request, res: Response) => {
             const username: string = (req.params as any).username;
 
-            if (username === rootAdminName) {
+            if (username === rootUsername) {
                 badRequest(res, "it is forbidden to edit root admin");
                 return;
             }
@@ -41,7 +40,7 @@ export const admin = (storage: Storage) =>
         .delete("/users/:username", async (req: Request, res: Response) => {
             const username: string = (req.params as any).username;
 
-            if (username === rootAdminName) {
+            if (username === rootUsername) {
                 badRequest(res, "it is forbidden to delete root admin");
                 return;
             }

@@ -10,7 +10,7 @@ import { authHandler } from "./auth-handler";
 import { signIn } from "./sign-in";
 import { signUp } from "./sign-up";
 import { admin } from "./admin";
-import { ensureRootAdmin } from "./root-admin";
+import { ensureRoot } from "./root";
 
 // tslint:disable: no-console
 
@@ -27,35 +27,44 @@ process.on("unhandledRejection", (err: any) => {
     app.use(bodyParser.json());
 
     const settings: Settings = await initSettings(path.resolve(__dirname, "../gateway.yaml"));
-    const storage: Storage = await initStorage(settings);
 
-    await ensureRootAdmin(settings, storage);
+    let storage: Storage | null = null;
+    if (settings.adminEnabled()) {
+        const storageParams = settings.getStorageParams();
 
-    app.use("/admin", authHandler(settings, true), admin(storage));
+        storage = await initStorage(storageParams.server, storageParams.database);
 
-    app.post("/signin", signIn(settings, storage));
-    app.post("/signup", signUp(storage));
+        await ensureRoot(settings, storage);
 
-    app.use(authHandler(settings, false));
+        const secret: string = settings.getSecret();
+
+        app.use("/admin", authHandler(secret, true), admin(storage));
+        app.post("/signin", signIn(secret, storage));
+        app.post("/signup", signUp(storage));
+        app.use(authHandler(secret, false));
+    }
+
     app.use(gatewayHandler(settings));
 
     const port: number = Number(process.env.PORT) || 3000;
 
     const server: Server = app.listen(port, () => console.log(`Gateway is listening on port ${port}...`));
 
-    function gracefulExit() {
-        console.log("Gateway is gracefully closing...");
+    function shutdown() {
+        console.log("Gateway is shutting down...");
 
         server.close(async () => {
             console.log("Gateway server is closed");
 
-            await storage.close();
-            console.log("Gateway storage is closed");
+            if (storage) {
+                await storage.close();
+                console.log("Gateway storage is closed");
+            }
 
             process.exit(0);
         });
     }
 
-    process.on("SIGINT", gracefulExit);
-    process.on("SIGTERM", gracefulExit);
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
 })();

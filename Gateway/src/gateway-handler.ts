@@ -2,7 +2,7 @@ import axios from "axios";
 import { Request, Response, NextFunction } from "express";
 import { Settings, RouteParams } from "./settings";
 import UrlPattern from "url-pattern";
-import { badRequest, okResult } from "./utils";
+import { badRequest, okResult, unauthorized } from "./utils";
 
 export const gatewayHandler = (settings: Settings) =>
     async (req: Request, res: Response, next: NextFunction) => {
@@ -21,7 +21,8 @@ export const gatewayHandler = (settings: Settings) =>
         if (authorize) {
             const tokenDecoded = (req as any).tokenDecoded;
             if (!tokenDecoded) {
-                throw new Error("token not found");
+                unauthorized(res);
+                return;
             }
         }
 

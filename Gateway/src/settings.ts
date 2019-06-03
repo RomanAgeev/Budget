@@ -9,7 +9,7 @@ export interface Settings {
     getStorageParams(): StorageParams;
     getSecret(): string;
     getRootPassword(): string;
-    isAuthRequired(): boolean;
+    adminEnabled(): boolean;
 }
 
 export interface RouteParams {
@@ -20,7 +20,7 @@ export interface RouteParams {
 }
 
 export interface StorageParams {
-    readonly storage: string;
+    readonly server: string;
     readonly database: string;
 }
 
@@ -60,24 +60,24 @@ export async function initSettings(path: string): Promise<Settings> {
         },
 
         getStorageParams(): StorageParams {
-            const storage: QueryResult | null = querySingle("authentication/storage");
+            const storage: QueryResult | null = querySingle("admin/server");
             if (!storage) {
-                throw new Error("gateway storage is not specified");
+                throw new Error("gateway db server is not specified");
             }
 
-            const database: QueryResult | null = querySingle("authentication/database");
+            const database: QueryResult | null = querySingle("admin/database");
             if (!database) {
                 throw new Error("gateway database is not specified");
             }
 
             return {
-                storage: storage.value,
+                server: storage.value,
                 database: database.value,
             };
         },
 
         getSecret(): string {
-            const secret: QueryResult | null = querySingle("authentication/secret");
+            const secret: QueryResult | null = querySingle("admin/secret");
             if (!secret) {
                 throw new Error("No Authentication secret is specified for the gateway");
             }
@@ -85,15 +85,15 @@ export async function initSettings(path: string): Promise<Settings> {
         },
 
         getRootPassword(): string {
-            const rootPassword: QueryResult | null = querySingle("authentication/root_password");
+            const rootPassword: QueryResult | null = querySingle("admin/root_password");
             if (!rootPassword) {
                 throw new Error("No Root password is specified for the gateway");
             }
             return rootPassword.value;
         },
 
-        isAuthRequired(): boolean {
-            return querySingle("authentication") !== null;
+        adminEnabled(): boolean {
+            return querySingle("admin") !== null;
         },
     };
 }
@@ -122,9 +122,9 @@ const settingsParser = json([
             ]))),
         ])),
     ])),
-    propOptional("authentication", obj([
+    propOptional("admin", obj([
         prop("secret", value("string")),
-        prop("storage", value("string")),
+        prop("server", value("string")),
         prop("database", value("string")),
         prop("root_password", value("string")),
     ])),

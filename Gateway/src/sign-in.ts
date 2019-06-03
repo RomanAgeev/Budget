@@ -5,7 +5,7 @@ import { Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { invalidCredentials } from "./utils";
 
-export const signIn = (settings: Settings, storage: Storage) => async (req: Request, res: Response) => {
+export const signIn = (secret: string, storage: Storage) => async (req: Request, res: Response) => {
     const username: string = req.body.username;
     const password: string = req.body.password;
 
@@ -27,7 +27,6 @@ export const signIn = (settings: Settings, storage: Storage) => async (req: Requ
         return;
     }
 
-    const secret = settings.getSecret();
     const token = jwt.sign({ username, admin: user.admin }, secret, { expiresIn: "24h" });
     res.json({ token });
 };

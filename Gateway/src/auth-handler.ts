@@ -6,13 +6,8 @@ import { TokenPayload } from "./token";
 
 const bearerPrefix = "Bearer ";
 
-export const authHandler = (settings: Settings, adminOnly: boolean) =>
+export const authHandler = (secret: string, adminOnly: boolean) =>
     (req: Request, res: Response, next: NextFunction) => {
-        if (!settings.isAuthRequired()) {
-            next();
-            return;
-        }
-
         const headers: any = req.headers;
 
         let token: string = headers["x-access-token"] || headers["authorization"];
@@ -24,8 +19,6 @@ export const authHandler = (settings: Settings, adminOnly: boolean) =>
             unauthorized(res);
             return;
         }
-
-        const secret: string = settings.getSecret();
 
         jwt.verify(token, secret, (err, tokenDecoded) => {
             if (err) {

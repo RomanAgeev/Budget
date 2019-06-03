@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Storage, UserModel } from "./storage";
+import { Storage, UserModel, createUser } from "./storage";
 import { createSalt, createHash } from "./password";
 import { badRequest, okResult } from "./utils";
 
@@ -18,16 +18,7 @@ export const signUp = (storage: Storage) => async (req: Request, res: Response) 
         return;
     }
 
-    const salt = createSalt();
-    const hash = createHash(password, salt);
-
-    const newUser: UserModel = {
-        username,
-        hash,
-        salt,
-        enabled: false,
-        admin: false,
-    };
+    const newUser: UserModel = createUser(username, password);
 
     const success: boolean = await storage.addUser(newUser);
     if (!success) {

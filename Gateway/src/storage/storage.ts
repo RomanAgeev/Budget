@@ -11,9 +11,7 @@ export interface Storage {
     close(): Promise<void>;
 }
 
-export async function initStorage(settings: Settings): Promise<Storage> {
-    const { storage, database } = settings.getStorageParams();
-
+export async function initStorage(storage: string, database: string): Promise<Storage> {
     const client = await new MongoClient(storage).connect();
     const db = client.db(database);
     const collection = db.collection("users");
