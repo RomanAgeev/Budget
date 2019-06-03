@@ -8,6 +8,7 @@ export interface Settings {
     getRouteParams(apiUrl: string, predicate: (api: string) => boolean): RouteParams;
     getStorageParams(): StorageParams;
     getSecret(): string;
+    getRootPassword(): string;
     isAuthRequired(): boolean;
 }
 
@@ -83,6 +84,14 @@ export async function initSettings(path: string): Promise<Settings> {
             return secret.value;
         },
 
+        getRootPassword(): string {
+            const rootPassword: QueryResult | null = querySingle("authentication/root_password");
+            if (!rootPassword) {
+                throw new Error("No Root password is specified for the gateway");
+            }
+            return rootPassword.value;
+        },
+
         isAuthRequired(): boolean {
             return querySingle("authentication") !== null;
         },
@@ -117,6 +126,7 @@ const settingsParser = json([
         prop("secret", value("string")),
         prop("storage", value("string")),
         prop("database", value("string")),
+        prop("root_password", value("string")),
     ])),
 ]);
 

@@ -10,6 +10,7 @@ import { authHandler } from "./auth-handler";
 import { signIn } from "./sign-in";
 import { signUp } from "./sign-up";
 import { admin } from "./admin";
+import { ensureRootAdmin } from "./root-admin";
 
 // tslint:disable: no-console
 
@@ -27,6 +28,8 @@ process.on("unhandledRejection", (err: any) => {
 
     const settings: Settings = await initSettings(path.resolve(__dirname, "../gateway.yaml"));
     const storage: Storage = await initStorage(settings);
+
+    await ensureRootAdmin(settings, storage);
 
     app.use("/admin", authHandler(settings, true), admin(storage));
 
