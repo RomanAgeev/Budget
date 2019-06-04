@@ -1,7 +1,7 @@
 import { describe, it, afterEach } from "mocha";
 import { expect } from "chai";
-import sinon from "sinon";
-import jwt from "jsonwebtoken";
+import * as sinon from "sinon";
+import * as jwt from "jsonwebtoken";
 import { UserModel } from "../src/user-model";
 import { Storage } from "../src/storage";
 import { createHash } from "../src/password";

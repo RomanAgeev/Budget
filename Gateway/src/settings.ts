@@ -1,6 +1,6 @@
-import fs from "fs";
-import util from "util";
-import yaml from "js-yaml";
+import * as fs from "fs";
+import * as util from "util";
+import * as yaml from "js-yaml";
 import { json, prop, obj, propAny, value, array, propOptional, ParseError, Query, QueryResult } from "@ra/json-queries";
 import { Predicate } from "@ra/json-queries/dist/iterate";
 

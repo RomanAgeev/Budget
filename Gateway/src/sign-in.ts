@@ -2,7 +2,7 @@ import { Storage } from "./storage";
 import { UserModel } from "./user-model";
 import { createHash } from "./password";
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import { invalidCredentials } from "./utils";
 import { TokenPayload } from "./token";
 

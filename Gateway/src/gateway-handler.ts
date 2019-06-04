@@ -1,7 +1,7 @@
 import axios, { Method } from "axios";
 import { Request, Response, NextFunction } from "express";
 import { Settings, RouteParams } from "./settings";
-import UrlPattern from "url-pattern";
+import * as UrlPattern from "url-pattern";
 import { badRequest, okResult, unauthorized } from "./utils";
 
 export const gatewayHandler = (settings: Settings) =>

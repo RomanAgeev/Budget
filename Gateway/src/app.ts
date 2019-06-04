@@ -1,8 +1,8 @@
-import express from "express";
+import * as express from "express";
 import { Express } from "express";
 import { Server } from "http";
-import bodyParser from "body-parser";
-import path from "path";
+import * as bodyParser from "body-parser";
+import * as path from "path";
 import { gatewayHandler } from "./gateway-handler";
 import { initStorage, Storage } from "./storage";
 import { initSettings, Settings, StorageSettings } from "./settings";
