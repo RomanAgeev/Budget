@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { Method } from "axios";
 import { Request, Response, NextFunction } from "express";
 import { Settings, RouteParams } from "./settings";
 import UrlPattern from "url-pattern";
@@ -30,11 +30,13 @@ export const gatewayHandler = (settings: Settings) =>
         const servicePattern = new UrlPattern(serviceRoute);
         const serviceUrl = serviceHost + servicePattern.stringify(apiPattern.match(apiUrl));
 
+        const method = req.method as Method;
+
         let result: any = null;
         try {
             result = await axios.request({
                 url: serviceUrl,
-                method: req.method,
+                method,
                 data: req.body,
             });
 
