@@ -1,4 +1,4 @@
-import { describe, it } from "mocha";
+import { describe, it, afterEach } from "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
 import jwt from "jsonwebtoken";
@@ -8,6 +8,10 @@ import { createHash } from "../src/password";
 import { signIn } from "../src/sign-in";
 
 describe("sign in", () => {
+    afterEach(() => {
+        sinon.restore();
+    });
+
     it("first test", async () => {
         const salt = "testsalt";
         const password = "testpass";
@@ -49,7 +53,7 @@ describe("sign in", () => {
             json: sinon.fake(),
         };
 
-        sinon.stub(jwt, "sign").callsFake((payload, secret, options) => payload);
+        const stubJwtSign = sinon.stub(jwt, "sign").callsFake((payload, secret, options) => payload);
 
         await signin(req, res);
 
@@ -61,5 +65,6 @@ describe("sign in", () => {
             },
         });
         sinon.assert.calledOnce(res.json);
+        sinon.assert.calledOnce(stubJwtSign);
     });
 });
