@@ -17,7 +17,8 @@
         "align": false,
         "interface-over-type-literal": false,
         "no-string-literal": false,
-        "interface-name": false
+        "interface-name": false,
+        "no-unused-expression": false
     },
     "rulesDirectory": []
 }
