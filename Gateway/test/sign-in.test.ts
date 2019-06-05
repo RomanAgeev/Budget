@@ -1,70 +1,117 @@
 import { describe, it, afterEach } from "mocha";
-import { expect } from "chai";
 import * as sinon from "sinon";
 import * as jwt from "jsonwebtoken";
 import { UserModel } from "../src/user-model";
-import { Storage } from "../src/storage";
 import { createHash } from "../src/password";
 import { signIn } from "../src/sign-in";
+import { invalidCredentialsMessage } from "../src/utils";
 
 describe("sign in", () => {
+    const secret = "test_secret";
+    const salt = "test_salt";
+    const username = "test_user";
+    const password = "test_pass";
+
+    const hash = createHash(password, salt);
+
+    const user: UserModel = {
+        username,
+        salt,
+        hash,
+        admin: false,
+        enabled: true,
+    };
+
+    let response: any;
+
+    function assertInvalidCredentials() {
+        sinon.assert.calledOnce(response.status);
+        sinon.assert.calledOnce(response.send);
+
+        sinon.assert.calledWith(response.status, 400);
+        sinon.assert.calledWith(response.send, invalidCredentialsMessage);
+    }
+
+    beforeEach(() => {
+        response = {
+            status: sinon.stub().callsFake(() => response),
+            send: sinon.stub().callsFake(() => response),
+            json: sinon.spy(),
+        };
+    });
+
     afterEach(() => {
         sinon.restore();
     });
 
-    it("first test", async () => {
-        const salt = "testsalt";
-        const password = "testpass";
-
-        const hash = createHash(password, salt);
-
-        const user: UserModel = {
-            username: "testuser",
-            salt,
-            hash,
-            admin: false,
-            enabled: true,
+    it("successful sign in", async () => {
+        const storage: any = {
+            getUser: sinon.stub().withArgs(username).resolves(user),
         };
 
-        const fakeStorage: Storage = {
-            getUsers: sinon.fake(),
-            getUser: sinon.fake(),
-            addUser: sinon.fake(),
-            updateUser: sinon.fake(),
-            deleteUser: sinon.fake(),
-            close: sinon.fake(),
-        };
+        const jwtSign = sinon.stub(jwt, "sign").returnsArg(0);
 
-        sinon.replace(fakeStorage, "getUser", sinon.fake.resolves(user));
+        const request: any = { body: { username, password } };
 
-        const signin = signIn("testSecret", fakeStorage);
+        await signIn(secret, storage)(request, response);
 
-        const req: any = {
-            body: {
-                username: "testuser",
-                password,
-            },
-        };
+        sinon.assert.calledOnce(response.json);
+        sinon.assert.calledOnce(jwtSign);
 
-        const res: any = {
-            status: sinon.fake(),
-            sendStatus: sinon.fake(),
-            send: sinon.fake(),
-            json: sinon.fake(),
-        };
-
-        const stubJwtSign = sinon.stub(jwt, "sign").callsFake((payload, secret, options) => payload);
-
-        await signin(req, res);
-
-        sinon.assert.calledWith(res.json, {
+        sinon.assert.calledWith(response.json, {
             token: {
-                username: "testuser",
-                enabled: true,
+                username,
                 admin: false,
+                enabled: true,
             },
         });
-        sinon.assert.calledOnce(res.json);
-        sinon.assert.calledOnce(stubJwtSign);
+    });
+
+    it("no username provided", async () => {
+        const storage: any = { };
+
+        const request: any = { body: { password } };
+
+        await signIn(secret, storage)(request, response);
+
+        assertInvalidCredentials();
+    });
+
+    it("no password provided", async () => {
+        const storage: any = { };
+
+        const request: any = { body: { username } };
+
+        await signIn(secret, storage)(request, response);
+
+        assertInvalidCredentials();
+    });
+
+    it("invalid username", async () => {
+        const wrongname = "wrongname";
+
+        const getUser = sinon.stub();
+        getUser.withArgs(username).resolves(user);
+        getUser.withArgs(wrongname).resolves(undefined);
+
+        const storage: any = { getUser };
+
+        const request: any = { body: { username: wrongname, password } };
+
+        await signIn(secret, storage)(request, response);
+
+        assertInvalidCredentials();
+    });
+
+    it("invalid password", async () => {
+        const storage: any = {
+            getUser: sinon.stub().withArgs(username).resolves(user),
+        };
+
+        const request: any = { body: { username, password: "wrongpass" } };
+
+        await signIn(secret, storage)(request, response);
+
+        assertInvalidCredentials();
     });
 });
