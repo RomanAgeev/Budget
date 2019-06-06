@@ -26,13 +26,19 @@ export const gatewayHandler = (settings: Settings) =>
             }
         }
 
-        const apiPattern = new UrlPattern(apiRoute);
-        const servicePattern = new UrlPattern(serviceRoute);
-        const serviceUrl = serviceHost + servicePattern.stringify(apiPattern.match(apiUrl));
+        let serviceUrl: string;
+        try {
+            const apiPattern = new UrlPattern(apiRoute);
+            const servicePattern = new UrlPattern(serviceRoute);
+            serviceUrl = serviceHost + servicePattern.stringify(apiPattern.match(apiUrl));
+        } catch (e) {
+            next(e);
+            return;
+        }
 
         const method = req.method as Method;
 
-        let result: any = null;
+        let result: any;
         try {
             result = await axios.request({
                 url: serviceUrl,

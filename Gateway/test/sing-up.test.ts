@@ -3,19 +3,13 @@ import * as sinon from "sinon";
 import { signUp } from "../src/sign-up";
 import { UserModel } from "../src/user-model";
 import { expect } from "chai";
+import { assertBadRequest } from "./test-utils";
 
 describe("sing up", () => {
     const username = "test_user";
     const password = "test_pass";
 
     let response: any;
-
-    function assertBadRequest() {
-        sinon.assert.calledOnce(response.status);
-        sinon.assert.calledOnce(response.send);
-
-        sinon.assert.calledWith(response.status, 400);
-    }
 
     beforeEach(() => {
         response = {
@@ -65,7 +59,7 @@ describe("sing up", () => {
 
         sinon.assert.notCalled(storage.addUser);
 
-        assertBadRequest();
+        assertBadRequest(response);
     });
 
     it("no password provided", async () => {
@@ -80,7 +74,7 @@ describe("sing up", () => {
 
         sinon.assert.notCalled(storage.addUser);
 
-        assertBadRequest();
+        assertBadRequest(response);
     });
 
     it("user already exists", async () => {
@@ -103,7 +97,7 @@ describe("sing up", () => {
 
         sinon.assert.notCalled(storage.addUser);
 
-        assertBadRequest();
+        assertBadRequest(response);
     });
 
     it("failed to add user", async () => {
@@ -116,6 +110,6 @@ describe("sing up", () => {
 
         await signUp(storage)(request, response);
 
-        assertBadRequest();
+        assertBadRequest(response);
     });
 });

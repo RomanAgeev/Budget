@@ -4,24 +4,15 @@ import * as jwt from "jsonwebtoken";
 import { authHandler } from "../src/auth-handler";
 import { TokenPayload } from "../src/token";
 import { expect } from "chai";
+import { assertUnauthorized, assertForbidden } from "./test-utils";
 
-describe.only("auth handler", () => {
+describe("auth handler", () => {
     const secret = "test_secret";
     const token = "test_token";
     const username = "test_user";
 
     let next: any;
     let response: any;
-
-    function assertUnauthorized() {
-        sinon.assert.calledOnce(response.sendStatus);
-        sinon.assert.calledWith(response.sendStatus, 401);
-    }
-
-    function assertForbidden() {
-        sinon.assert.calledOnce(response.sendStatus);
-        sinon.assert.calledWith(response.sendStatus, 403);
-    }
 
     beforeEach(() => {
         next = sinon.spy();
@@ -77,7 +68,7 @@ describe.only("auth handler", () => {
 
         expect(response.tokenDecoded).undefined;
 
-        assertUnauthorized();
+        assertUnauthorized(response);
     });
 
     it("invalid token format", async () => {
@@ -96,7 +87,7 @@ describe.only("auth handler", () => {
 
         expect(response.tokenDecoded).undefined;
 
-        assertUnauthorized();
+        assertUnauthorized(response);
     });
 
     it("token not verified", async () => {
@@ -114,7 +105,7 @@ describe.only("auth handler", () => {
 
         expect(response.tokenDecoded).undefined;
 
-        assertUnauthorized();
+        assertUnauthorized(response);
     });
 
     it("user account disabled", async () => {
@@ -138,7 +129,7 @@ describe.only("auth handler", () => {
 
         expect(response.tokenDecoded).undefined;
 
-        assertForbidden();
+        assertForbidden(response);
     });
 
     it("admin in adminonly mode", async () => {
@@ -184,6 +175,6 @@ describe.only("auth handler", () => {
 
         expect(response.tokenDecoded).undefined;
 
-        assertForbidden();
+        assertForbidden(response);
     });
 });

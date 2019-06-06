@@ -5,6 +5,7 @@ import { UserModel } from "../src/user-model";
 import { createHash } from "../src/password";
 import { signIn } from "../src/sign-in";
 import { invalidCredentialsMessage } from "../src/utils";
+import { assertBadRequest } from "./test-utils";
 
 describe("sign in", () => {
     const secret = "test_secret";
@@ -24,13 +25,7 @@ describe("sign in", () => {
 
     let response: any;
 
-    function assertInvalidCredentials() {
-        sinon.assert.calledOnce(response.status);
-        sinon.assert.calledOnce(response.send);
-
-        sinon.assert.calledWith(response.status, 400);
-        sinon.assert.calledWith(response.send, invalidCredentialsMessage);
-    }
+    const assertInvalidCredentials = () => assertBadRequest(response, invalidCredentialsMessage);
 
     beforeEach(() => {
         response = {
