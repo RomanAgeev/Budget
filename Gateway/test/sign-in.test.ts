@@ -1,4 +1,4 @@
-import { describe, it, afterEach } from "mocha";
+import { describe, it, beforeEach, afterEach } from "mocha";
 import * as sinon from "sinon";
 import * as jwt from "jsonwebtoken";
 import { UserModel } from "../src/user-model";
