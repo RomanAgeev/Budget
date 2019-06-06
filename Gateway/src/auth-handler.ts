@@ -13,9 +13,7 @@ export const authHandler = (secret: string, adminOnly: boolean) =>
         let token: string = headers["x-access-token"] || headers["authorization"];
         if (token && token.startsWith(bearerPrefix)) {
             token = token.slice(bearerPrefix.length, token.length);
-        }
-
-        if (!token) {
+        } else {
             unauthorized(res);
             return;
         }
