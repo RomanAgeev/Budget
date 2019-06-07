@@ -4,10 +4,9 @@
     "module": "commonjs",
     "sourceMap": true,
     "strict": true,
-    "outDir": "./build"
+    "outDir": "./dist"
   },
   "include": [
-    "./src",
-    "./test"
+    "./src"
   ]
 }
