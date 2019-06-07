@@ -9,7 +9,7 @@ import { initSettings, Settings, StorageSettings } from "./settings";
 import { authHandler } from "./auth-handler";
 import { signIn } from "./sign-in";
 import { signUp } from "./sign-up";
-import { admin } from "./admin";
+import { adminRouter } from "./admin-router";
 
 // tslint:disable: no-console
 
@@ -35,7 +35,7 @@ process.on("unhandledRejection", (err: any) => {
 
         const secret: string = storageSettings.getSecret();
 
-        app.use("/admin", authHandler(secret, true), admin(storage));
+        app.use("/admin", authHandler(secret, true), adminRouter(storage));
         app.post("/signin", signIn(secret, storage));
         app.post("/signup", signUp(storage));
         app.use(authHandler(secret, false));

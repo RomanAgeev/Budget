@@ -1,6 +1,6 @@
 import * as sinon from "sinon";
 
-export function assertOk(response: any, data: any) {
+export function assertOk(response: any, data?: any) {
     assertStatus(response.status, 200);
     assertSend(response.send, data);
 }
