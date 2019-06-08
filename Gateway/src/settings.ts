@@ -23,11 +23,6 @@ export interface RouteParams {
     readonly authorize: boolean;
 }
 
-export interface StorageParams {
-    readonly server: string;
-    readonly database: string;
-}
-
 const storagePath = "storage";
 
 export async function initSettings(path: string): Promise<Settings> {
