@@ -2,7 +2,8 @@ import axios, { Method } from "axios";
 import { Request, Response, NextFunction } from "express";
 import { Settings, RouteParams } from "./settings";
 import * as UrlPattern from "url-pattern";
-import { badRequest, okResult, unauthorized } from "./utils";
+import { okResult } from "./utils";
+import { domainError, unauthorized } from "./error-handler";
 
 export const gatewayHandler = (settings: Settings) =>
     async (req: Request, res: Response, next: NextFunction) => {
@@ -12,7 +13,7 @@ export const gatewayHandler = (settings: Settings) =>
         try {
             routeParams = settings.getRouteParams(apiUrl, api => new UrlPattern(api).match(apiUrl) !== null);
         } catch (e) {
-            badRequest(res, e.message);
+            next(domainError("UnknownApiEndpoint", e.message));
             return;
         }
 
@@ -21,7 +22,7 @@ export const gatewayHandler = (settings: Settings) =>
         if (authorize) {
             const tokenDecoded = (req as any).tokenDecoded;
             if (!tokenDecoded) {
-                unauthorized(res);
+                next(unauthorized());
                 return;
             }
         }
@@ -50,7 +51,7 @@ export const gatewayHandler = (settings: Settings) =>
             if (e.response) {
                 res.status(e.response.status).send(e.response.data);
             } else {
-                badRequest(res, `Service endpoint is unavailable for api: ${apiUrl}`);
+                next(domainError("UnavailableServiceEndpoint", `Service endpoint is unavailable for api: ${apiUrl}`));
             }
             return;
         }

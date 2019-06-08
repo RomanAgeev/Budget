@@ -14,6 +14,7 @@ import { signUp } from "./sign-up";
 import { adminRouter } from "./admin-router";
 import { isDevelopment } from "./utils";
 import { loggerHandler } from "./logger-handler";
+import { errorHandler } from "./error-handler";
 
 const logger: Logger = pino({
     level: isDevelopment() ? "debug" : "info",
@@ -54,6 +55,7 @@ process.on("uncaughtException", pino.final(logger, (err, finalLogger) => {
     }
 
     app.use(gatewayHandler(settings));
+    app.use(errorHandler(logger));
 
     const port: number = Number(process.env.PORT) || 3000;
 
