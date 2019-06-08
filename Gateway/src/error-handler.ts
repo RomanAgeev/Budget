@@ -5,6 +5,8 @@ export type ErrorType = "domain" | "unauthorized" | "forbidden";
 
 export type ErrorCause =
     "RootUserUpdateOrDelete" |
+    "UserAlreadyExists" |
+    "InvalidUserCredentials" |
     "UnknownApiEndpoint" |
     "UnavailableServiceEndpoint";
 
@@ -19,16 +21,25 @@ export const domainError = (cause: ErrorCause, message: string): GatewayError =>
     cause,
     errors: [ message ],
 });
+
 export const validationError = (errors: any[]): GatewayError => ({
     type: "domain",
     cause: "Validation",
     errors,
 });
+
+export const credentialsError = (): GatewayError => ({
+    type: "domain",
+    cause: "InvalidUserCredentials",
+    errors: "invalid username or password",
+});
+
 export const unauthorized = (): GatewayError => ({
     type: "unauthorized",
     cause: "Unauthorized",
     errors: "request is not authorized",
 });
+
 export const forbidden = (): GatewayError => ({
     type: "forbidden",
     cause: "Forbidden",
@@ -41,7 +52,11 @@ export const errorHandler = (logger: Logger) =>
         const cause: string = err.cause;
         const errors: any = err.errors || err.message;
 
-        logger.warn("%d %s %o", status, cause, errors);
+        if (status === 500) {
+            logger.error("%d %s %o", status, cause, errors);
+        } else {
+            logger.warn("%d %s %o", status, cause, errors);
+        }
 
         res.status(status).send({ cause, errors });
     };

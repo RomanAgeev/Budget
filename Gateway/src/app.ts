@@ -9,8 +9,8 @@ import { gatewayHandler } from "./gateway-handler";
 import { initStorage, Storage } from "./storage";
 import { initSettings, Settings, StorageSettings } from "./settings";
 import { authHandler } from "./auth-handler";
-import { signIn } from "./sign-in";
-import { signUp } from "./sign-up";
+import { signInRouter } from "./sign-in-router";
+import { singUpRouter } from "./sign-up-router";
 import { adminRouter } from "./admin-router";
 import { isDevelopment } from "./utils";
 import { loggerHandler } from "./logger-handler";
@@ -22,12 +22,12 @@ const logger: Logger = pino({
 });
 
 process.on("uncaughtException", pino.final(logger, (err, finalLogger) => {
-    finalLogger.error(err, "uncaughtException");
+    finalLogger.fatal(err, "uncaughtException");
     process.exit(1);
 }));
 
 (process as any).on("unhandledRejection", pino.final(logger, (err, finalLogger) => {
-    finalLogger.error(err, "unhandledRejection");
+    finalLogger.fatal(err, "unhandledRejection");
     process.exit(1);
 }));
 
@@ -49,8 +49,8 @@ process.on("uncaughtException", pino.final(logger, (err, finalLogger) => {
         const secret: string = storageSettings.getSecret();
 
         app.use("/admin", authHandler(secret, true), adminRouter(storage));
-        app.post("/signin", signIn(secret, storage));
-        app.post("/signup", signUp(storage));
+        app.use("/signin", signInRouter(secret, storage));
+        app.use("/signup", singUpRouter(storage));
         app.use(authHandler(secret, false));
     }
 
