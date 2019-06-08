@@ -4,7 +4,6 @@ import { createHash } from "./password";
 import { Request, Response, Router } from "express";
 import * as jwt from "jsonwebtoken";
 import { body } from "express-validator/check";
-import { invalidCredentials } from "./utils";
 import { TokenPayload } from "./token";
 import { validationHandler } from "./validation-handler";
 import { NextFunction } from "connect";
@@ -20,6 +19,11 @@ export const signInRouter = (secret: string, storage: Storage) =>
 export const signIn = (secret: string, storage: Storage) =>
     async (req: Request, res: Response, next: NextFunction) => {
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            next(new Error("username or password doesn't exist"));
+            return;
+        }
 
         const user: UserModel | null = await storage.getUser(username);
         if (!user) {

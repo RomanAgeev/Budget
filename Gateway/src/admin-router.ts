@@ -3,7 +3,7 @@ import { Storage } from "./storage";
 import { UserModel, UserUpdateModel, userViewModel, rootname } from "./user-model";
 import { okResult } from "./utils";
 import { NextFunction } from "connect";
-import { body } from "express-validator/check";
+import { body, param } from "express-validator/check";
 import { domainError } from "./error-handler";
 import { validationHandler } from "./validation-handler";
 
@@ -12,11 +12,14 @@ export const adminRouter = (storage: Storage) =>
         .get("/users", getUsers(storage))
 
         .put("/users/:username", [
+            param("username").exists().isString(),
             body("enabled").exists().isBoolean(),
             body("admin").exists().isBoolean(),
         ], validationHandler, putUser(storage))
 
-        .delete("/users/:username", deleteUser(storage));
+        .delete("/users/:username", [
+            param("username").exists().isString(),
+        ], validationHandler, deleteUser(storage));
 
 export const getUsers = (storage: Storage) => async (req: Request, res: Response) => {
     const users: UserModel[] = await storage.getUsers();
@@ -26,13 +29,21 @@ export const getUsers = (storage: Storage) => async (req: Request, res: Response
 
 export const putUser = (storage: Storage) => async (req: Request, res: Response, next: NextFunction) => {
     const username: string = (req.params as any).username;
+    if (!username) {
+        next(new Error("username doesn't exist"));
+        return;
+    }
+
+    const updateModel: UserUpdateModel = req.body;
+    if (!updateModel) {
+        next(new Error("update model doesn't exist"));
+        return;
+    }
 
     if (username === rootname) {
         next(domainError("RootUserUpdateOrDelete", "it is forbidden to edit root admin"));
         return;
     }
-
-    const updateModel: UserUpdateModel = req.body;
 
     const success = await storage.updateUser(username, updateModel);
     if (!success) {
@@ -51,6 +62,10 @@ export const putUser = (storage: Storage) => async (req: Request, res: Response,
 
 export const deleteUser = (storage: Storage) => async (req: Request, res: Response, next: NextFunction) => {
     const username: string = (req.params as any).username;
+    if (!username) {
+        next(new Error("username doesn't exist"));
+        return;
+    }
 
     if (username === rootname) {
         next(domainError("RootUserUpdateOrDelete", "it is forbidden to delete root admin"));

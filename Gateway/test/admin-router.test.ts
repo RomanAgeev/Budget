@@ -1,8 +1,8 @@
 import { describe, it, beforeEach, afterEach } from "mocha";
 import * as sinon from "sinon";
-import { UserModel, UserViewModel, UserUpdateModel, rootname } from "../src/user-model";
+import { UserModel, UserUpdateModel, rootname } from "../src/user-model";
 import { getUsers, putUser, deleteUser } from "../src/admin-router";
-import { assertOk, assertBadRequest } from "./test-utils";
+import { assertOk, assertDomainError, assertInternalError } from "./test-utils";
 
 describe("admin-router", () => {
     const username1 = "test_user1";
@@ -30,8 +30,10 @@ describe("admin-router", () => {
     };
 
     let response: any;
+    let next: any;
 
     beforeEach(() => {
+        next = sinon.spy();
         response = {
             status: sinon.stub().callsFake(() => response),
             send: sinon.stub().callsFake(() => response),
@@ -53,7 +55,7 @@ describe("admin-router", () => {
 
         await getUsers(storage)(request, response);
 
-        assertOk(response, [{
+        assertOk(next, response, [{
             username: username1,
             enabled: user1.enabled,
             admin: user1.admin,
@@ -70,32 +72,32 @@ describe("admin-router", () => {
             updateUser: sinon.stub().resolves(true),
         };
 
-        const request: any = { params: { username: username1 }, body: { userUpdate } };
+        const request: any = { params: { username: username1 }, body: userUpdate };
 
-        await putUser(storage)(request, response);
+        await putUser(storage)(request, response, next);
 
         sinon.assert.calledOnce(storage.updateUser);
         sinon.assert.calledWith(storage.updateUser, username1, userUpdate);
 
-        assertOk(response, {
+        assertOk(next, response, {
             username: username1,
             enabled: user1.enabled,
             admin: user1.admin,
         });
     });
 
-    it("failed put root user", async () => {
+    it("no username provided", async () => {
         const storage: any = {
             updateUser: sinon.stub().resolves(true),
         };
 
-        const request: any = { params: { username: rootname } };
+        const request: any = { params: { }, body: userUpdate };
 
-        await putUser(storage)(request, response);
+        await putUser(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.updateUser);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 
     it("no update model provided", async () => {
@@ -103,28 +105,43 @@ describe("admin-router", () => {
             updateUser: sinon.stub().resolves(true),
         };
 
-        const request: any = { params: { username: username1 }, body: { } };
+        const request: any = { params: { username: username1 } };
 
-        await putUser(storage)(request, response);
+        await putUser(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.updateUser);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
+
+    it("attempt to change 'root' user", async () => {
+        const storage: any = {
+            updateUser: sinon.stub().resolves(true),
+        };
+
+        const request: any = { params: { username: rootname }, body: userUpdate };
+
+        await putUser(storage)(request, response, next);
+
+        sinon.assert.notCalled(storage.updateUser);
+
+        assertDomainError(next, "RootUserUpdateOrDelete");
+    });
+
 
     it("failed to update user", async () => {
         const storage: any = {
             updateUser: sinon.stub().resolves(false),
         };
 
-        const request: any = { params: { username: username1 }, body: { userUpdate } };
+        const request: any = { params: { username: username1 }, body: userUpdate };
 
-        await putUser(storage)(request, response);
+        await putUser(storage)(request, response, next);
 
         sinon.assert.calledOnce(storage.updateUser);
         sinon.assert.calledWith(storage.updateUser, username1, userUpdate);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 
     it("failed to get user", async () => {
@@ -133,14 +150,14 @@ describe("admin-router", () => {
             updateUser: sinon.stub().resolves(true),
         };
 
-        const request: any = { params: { username: username1 }, body: { userUpdate } };
+        const request: any = { params: { username: username1 }, body: userUpdate };
 
-        await putUser(storage)(request, response);
+        await putUser(storage)(request, response, next);
 
         sinon.assert.calledOnce(storage.updateUser);
         sinon.assert.calledWith(storage.updateUser, username1, userUpdate);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 
     it("delete user", async () => {
@@ -150,12 +167,26 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 } };
 
-        await deleteUser(storage)(request, response);
+        await deleteUser(storage)(request, response, next);
 
         sinon.assert.calledOnce(storage.deleteUser);
         sinon.assert.calledWith(storage.deleteUser, username1);
 
-        assertOk(response);
+        assertOk(next, response);
+    });
+
+    it("delete user - no username provided", async () => {
+        const storage: any = {
+            deleteUser: sinon.stub().resolves(true),
+        };
+
+        const request: any = { params: { } };
+
+        await deleteUser(storage)(request, response, next);
+
+        sinon.assert.notCalled(storage.deleteUser);
+
+        assertInternalError(next);
     });
 
     it("failed delete root user", async () => {
@@ -165,11 +196,11 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: rootname } };
 
-        await deleteUser(storage)(request, response);
+        await deleteUser(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.deleteUser);
 
-        assertBadRequest(response);
+        assertDomainError(next, "RootUserUpdateOrDelete");
     });
 
     it("failed delete user", async () => {
@@ -179,11 +210,11 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 } };
 
-        await deleteUser(storage)(request, response);
+        await deleteUser(storage)(request, response, next);
 
         sinon.assert.calledOnce(storage.deleteUser);
         sinon.assert.calledWith(storage.deleteUser, username1);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 });

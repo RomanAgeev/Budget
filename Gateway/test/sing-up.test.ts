@@ -1,17 +1,19 @@
 import { describe, it, beforeEach, afterEach } from "mocha";
 import * as sinon from "sinon";
-import { signUp } from "../src/sign-up";
+import { signUp } from "../src/sign-up-router";
 import { UserModel } from "../src/user-model";
 import { expect } from "chai";
-import { assertBadRequest } from "./test-utils";
+import { assertOk, assertDomainError, assertInternalError } from "./test-utils";
 
 describe("sing up", () => {
     const username = "test_user";
     const password = "test_pass";
 
+    let next: any;
     let response: any;
 
     beforeEach(() => {
+        next = sinon.spy();
         response = {
             status: sinon.stub().callsFake(() => response),
             send: sinon.stub().callsFake(() => response),
@@ -31,12 +33,11 @@ describe("sing up", () => {
 
         const request: any = { body: { username, password } };
 
-        await signUp(storage)(request, response);
+        await signUp(storage)(request, response, next);
 
-        sinon.assert.calledOnce(response.status);
         sinon.assert.calledOnce(storage.addUser);
 
-        sinon.assert.calledWith(response.status, 200);
+        assertOk(next, response);
 
         const newUser: UserModel = storage.addUser.firstCall.args[0];
 
@@ -47,6 +48,7 @@ describe("sing up", () => {
         expect(newUser.enabled).false;
     });
 
+
     it("no username provided", async () => {
         const storage: any = {
             getUser: sinon.stub().resolves(undefined),
@@ -55,11 +57,11 @@ describe("sing up", () => {
 
         const request: any = { body: { password } };
 
-        await signUp(storage)(request, response);
+        await signUp(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.addUser);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 
     it("no password provided", async () => {
@@ -70,11 +72,11 @@ describe("sing up", () => {
 
         const request: any = { body: { username } };
 
-        await signUp(storage)(request, response);
+        await signUp(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.addUser);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 
     it("user already exists", async () => {
@@ -93,11 +95,11 @@ describe("sing up", () => {
 
         const request: any = { body: { username, password } };
 
-        await signUp(storage)(request, response);
+        await signUp(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.addUser);
 
-        assertBadRequest(response);
+        assertDomainError(next, "UserAlreadyExists");
     });
 
     it("failed to add user", async () => {
@@ -108,8 +110,8 @@ describe("sing up", () => {
 
         const request: any = { body: { username, password } };
 
-        await signUp(storage)(request, response);
+        await signUp(storage)(request, response, next);
 
-        assertBadRequest(response);
+        assertInternalError(next);
     });
 });

@@ -1,32 +1,49 @@
 import * as sinon from "sinon";
+import { ErrorCause } from "../src/error-handler";
 
-export function assertOk(response: any, data?: any) {
-    assertStatus(response.status, 200);
-    assertSend(response.send, data);
+export function assertDomainError(next: any, cause: ErrorCause) {
+    sinon.assert.calledOnce(next);
+    sinon.assert.calledWith(next, sinon.match({
+        type: "domain",
+        cause,
+    }));
 }
 
-export function assertServerError(response: any, data: any) {
-    assertStatus(response.status, 500);
-    assertSend(response.send, data);
+export function assertUnauthorized(next: any) {
+    sinon.assert.calledOnce(next);
+    sinon.assert.calledWith(next, sinon.match({
+        type: "unauthorized",
+        cause: "Unauthorized",
+    }));
 }
 
-export function assertBadRequest(response: any, data?: string) {
-    assertStatus(response.status, 400);
-    assertSend(response.send, data);
+export function assertForbidden(next: any) {
+    sinon.assert.calledOnce(next);
+    sinon.assert.calledWith(next, sinon.match({
+        type: "forbidden",
+        cause: "Forbidden",
+    }));
 }
 
-export const assertUnauthorized = (response: any) => assertStatus(response.sendStatus, 401);
-
-export const assertForbidden = (response: any) => assertStatus(response.sendStatus, 403);
-
-function assertStatus(statusCall: any, status: number) {
-    sinon.assert.calledOnce(statusCall);
-    sinon.assert.calledWith(statusCall, status);
+export function assertCredentialsError(next: any) {
+    sinon.assert.calledOnce(next);
+    sinon.assert.calledWith(next, sinon.match({
+        type: "domain",
+        cause: "InvalidUserCredentials",
+    }));
 }
 
-function assertSend(sendCall: any, data?: any) {
-    sinon.assert.calledOnce(sendCall);
+export function assertInternalError(next: any) {
+    sinon.assert.calledOnce(next);
+    sinon.assert.calledWith(next, sinon.match.instanceOf(Error));
+}
+
+export function assertOk(next: any, response: any, data?: any) {
+    sinon.assert.notCalled(next);
+    sinon.assert.calledOnce(response.status);
+    sinon.assert.calledWith(response.status, 200);
+    sinon.assert.calledOnce(response.send);
     if (data) {
-        sinon.assert.calledWith(sendCall, data);
+        sinon.assert.calledWith(response.send, data);
     }
 }

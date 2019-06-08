@@ -64,11 +64,10 @@ describe("auth handler", () => {
         await authHandler(secret, false)(request, response, next);
 
         sinon.assert.notCalled(jwtVerify);
-        sinon.assert.notCalled(next);
 
         expect(response.tokenDecoded).undefined;
 
-        assertUnauthorized(response);
+        assertUnauthorized(next);
     });
 
     it("invalid token format", async () => {
@@ -83,11 +82,10 @@ describe("auth handler", () => {
         await authHandler(secret, false)(request, response, next);
 
         sinon.assert.notCalled(jwtVerify);
-        sinon.assert.notCalled(next);
 
         expect(response.tokenDecoded).undefined;
 
-        assertUnauthorized(response);
+        assertUnauthorized(next);
     });
 
     it("token not verified", async () => {
@@ -101,11 +99,9 @@ describe("auth handler", () => {
 
         await authHandler(secret, false)(request, response, next);
 
-        sinon.assert.notCalled(next);
-
         expect(response.tokenDecoded).undefined;
 
-        assertUnauthorized(response);
+        assertUnauthorized(next);
     });
 
     it("user account disabled", async () => {
@@ -125,11 +121,9 @@ describe("auth handler", () => {
 
         await authHandler(secret, false)(request, response, next);
 
-        sinon.assert.notCalled(next);
-
         expect(response.tokenDecoded).undefined;
 
-        assertForbidden(response);
+        assertForbidden(next);
     });
 
     it("admin in adminonly mode", async () => {
@@ -171,10 +165,8 @@ describe("auth handler", () => {
 
         await authHandler(secret, true)(request, response, next);
 
-        sinon.assert.notCalled(next);
-
         expect(response.tokenDecoded).undefined;
 
-        assertForbidden(response);
+        assertForbidden(next);
     });
 });

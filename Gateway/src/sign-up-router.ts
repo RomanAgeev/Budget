@@ -18,6 +18,11 @@ export const signUp = (storage: Storage) =>
     async (req: Request, res: Response, next: NextFunction) => {
         const { username, password } = req.body;
 
+        if (!username || !password) {
+            next(new Error("username or password doesn't exist"));
+            return;
+        }
+
         const user: UserModel | null = await storage.getUser(username);
         if (user) {
             next(domainError("UserAlreadyExists", `${username} user already exists`));

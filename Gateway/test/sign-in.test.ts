@@ -3,9 +3,8 @@ import * as sinon from "sinon";
 import * as jwt from "jsonwebtoken";
 import { UserModel } from "../src/user-model";
 import { createHash } from "../src/password";
-import { signIn } from "../src/sign-in";
-import { invalidCredentialsMessage } from "../src/utils";
-import { assertBadRequest } from "./test-utils";
+import { signIn } from "../src/sign-in-router";
+import { assertCredentialsError, assertInternalError } from "./test-utils";
 
 describe("sign in", () => {
     const secret = "test_secret";
@@ -23,11 +22,11 @@ describe("sign in", () => {
         enabled: true,
     };
 
+    let next: any;
     let response: any;
 
-    const assertInvalidCredentials = () => assertBadRequest(response, invalidCredentialsMessage);
-
     beforeEach(() => {
+        next = sinon.spy();
         response = {
             status: sinon.stub().callsFake(() => response),
             send: sinon.stub().callsFake(() => response),
@@ -48,7 +47,7 @@ describe("sign in", () => {
 
         const request: any = { body: { username, password } };
 
-        await signIn(secret, storage)(request, response);
+        await signIn(secret, storage)(request, response, next);
 
         sinon.assert.calledOnce(response.json);
         sinon.assert.calledOnce(jwtSign);
@@ -67,9 +66,9 @@ describe("sign in", () => {
 
         const request: any = { body: { password } };
 
-        await signIn(secret, storage)(request, response);
+        await signIn(secret, storage)(request, response, next);
 
-        assertInvalidCredentials();
+        assertInternalError(next);
     });
 
     it("no password provided", async () => {
@@ -77,9 +76,9 @@ describe("sign in", () => {
 
         const request: any = { body: { username } };
 
-        await signIn(secret, storage)(request, response);
+        await signIn(secret, storage)(request, response, next);
 
-        assertInvalidCredentials();
+        assertInternalError(next);
     });
 
     it("invalid username", async () => {
@@ -93,9 +92,9 @@ describe("sign in", () => {
 
         const request: any = { body: { username: wrongname, password } };
 
-        await signIn(secret, storage)(request, response);
+        await signIn(secret, storage)(request, response, next);
 
-        assertInvalidCredentials();
+        assertCredentialsError(next);
     });
 
     it("invalid password", async () => {
@@ -105,8 +104,8 @@ describe("sign in", () => {
 
         const request: any = { body: { username, password: "wrongpass" } };
 
-        await signIn(secret, storage)(request, response);
+        await signIn(secret, storage)(request, response, next);
 
-        assertInvalidCredentials();
+        assertCredentialsError(next);
     });
 });

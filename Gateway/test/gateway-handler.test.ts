@@ -3,7 +3,7 @@ import * as sinon from "sinon";
 import axios from "axios";
 import { RouteParams } from "../src/settings";
 import { gatewayHandler } from "../src/gateway-handler";
-import { assertOk, assertServerError, assertBadRequest, assertUnauthorized } from "./test-utils";
+import { assertOk, assertUnauthorized, assertDomainError, assertInternalError } from "./test-utils";
 
 describe("gateway handler", () => {
     const url = "/test/api/1";
@@ -64,9 +64,8 @@ describe("gateway handler", () => {
             await gatewayHandler(settings)(request, response, next);
 
             sinon.assert.calledOnce(axiosStub);
-            sinon.assert.notCalled(next);
 
-            assertOk(response, "test_response");
+            assertOk(next, response, "test_response");
         });
     });
 
@@ -82,9 +81,8 @@ describe("gateway handler", () => {
         await gatewayHandler(settings)(request, response, next);
 
         sinon.assert.notCalled(axiosStub);
-        sinon.assert.notCalled(next);
 
-        assertBadRequest(response, "not_found");
+        assertDomainError(next, "UnknownApiEndpoint");
     });
 
     it("invalid authorization token", async () => {
@@ -101,9 +99,8 @@ describe("gateway handler", () => {
         await gatewayHandler(settings)(request, response, next);
 
         sinon.assert.notCalled(axiosStub);
-        sinon.assert.notCalled(next);
 
-        assertUnauthorized(response);
+        assertUnauthorized(next);
     });
 
     it("invalid service request with status", async () => {
@@ -132,9 +129,12 @@ describe("gateway handler", () => {
         await gatewayHandler(settings)(request, response, next);
 
         sinon.assert.calledOnce(axiosStub);
-        sinon.assert.notCalled(next);
 
-        assertServerError(response, "rejectData");
+        sinon.assert.notCalled(next);
+        sinon.assert.calledOnce(response.status);
+        sinon.assert.calledWith(response.status, 500);
+        sinon.assert.calledOnce(response.send);
+        sinon.assert.calledWith(response.send, "rejectData");
     });
 
     it("invalid service request without status", async () => {
@@ -156,10 +156,9 @@ describe("gateway handler", () => {
 
         await gatewayHandler(settings)(request, response, next);
 
-        sinon.assert.notCalled(next);
         sinon.assert.calledOnce(axiosStub);
 
-        assertBadRequest(response);
+        assertDomainError(next, "UnavailableServiceEndpoint");
     });
 
     [
@@ -186,7 +185,8 @@ describe("gateway handler", () => {
             await gatewayHandler(settings)(request, response, next);
 
             sinon.assert.notCalled(axiosStub);
-            sinon.assert.calledOnce(next);
+
+            assertInternalError(next);
         });
     });
 });
