@@ -1,10 +1,11 @@
 import { describe, it, beforeEach, afterEach } from "mocha";
 import * as sinon from "sinon";
-import { UserModel, UserUpdateModel, adminName } from "../src/user-model";
+import { UserModel, UserUpdateModel } from "../src/user-model";
 import { getUsers, putUser, deleteUser } from "../src/admin-router";
 import { assertOk, assertDomainError, assertInternalError } from "./test-utils";
 
 describe("admin-router", () => {
+    const adminName = "__admin__";
     const username1 = "test_user1";
     const username2 = "test_user2";
 
@@ -74,7 +75,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 }, body: userUpdate };
 
-        await putUser(storage)(request, response, next);
+        await putUser(storage, adminName)(request, response, next);
 
         sinon.assert.calledOnce(storage.updateUser);
         sinon.assert.calledWith(storage.updateUser, username1, userUpdate);
@@ -93,7 +94,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { }, body: userUpdate };
 
-        await putUser(storage)(request, response, next);
+        await putUser(storage, adminName)(request, response, next);
 
         sinon.assert.notCalled(storage.updateUser);
 
@@ -107,7 +108,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 } };
 
-        await putUser(storage)(request, response, next);
+        await putUser(storage, adminName)(request, response, next);
 
         sinon.assert.notCalled(storage.updateUser);
 
@@ -121,7 +122,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: adminName }, body: userUpdate };
 
-        await putUser(storage)(request, response, next);
+        await putUser(storage, adminName)(request, response, next);
 
         sinon.assert.notCalled(storage.updateUser);
 
@@ -136,7 +137,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 }, body: userUpdate };
 
-        await putUser(storage)(request, response, next);
+        await putUser(storage, adminName)(request, response, next);
 
         sinon.assert.calledOnce(storage.updateUser);
         sinon.assert.calledWith(storage.updateUser, username1, userUpdate);
@@ -152,7 +153,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 }, body: userUpdate };
 
-        await putUser(storage)(request, response, next);
+        await putUser(storage, adminName)(request, response, next);
 
         sinon.assert.calledOnce(storage.updateUser);
         sinon.assert.calledWith(storage.updateUser, username1, userUpdate);
@@ -167,7 +168,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 } };
 
-        await deleteUser(storage)(request, response, next);
+        await deleteUser(storage, adminName)(request, response, next);
 
         sinon.assert.calledOnce(storage.deleteUser);
         sinon.assert.calledWith(storage.deleteUser, username1);
@@ -182,7 +183,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { } };
 
-        await deleteUser(storage)(request, response, next);
+        await deleteUser(storage, adminName)(request, response, next);
 
         sinon.assert.notCalled(storage.deleteUser);
 
@@ -196,7 +197,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: adminName } };
 
-        await deleteUser(storage)(request, response, next);
+        await deleteUser(storage, adminName)(request, response, next);
 
         sinon.assert.notCalled(storage.deleteUser);
 
@@ -210,7 +211,7 @@ describe("admin-router", () => {
 
         const request: any = { params: { username: username1 } };
 
-        await deleteUser(storage)(request, response, next);
+        await deleteUser(storage, adminName)(request, response, next);
 
         sinon.assert.calledOnce(storage.deleteUser);
         sinon.assert.calledWith(storage.deleteUser, username1);

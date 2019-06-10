@@ -27,10 +27,7 @@ export function userViewModel(user: UserModel): UserViewModel {
     };
 }
 
-export const adminName = "__admin__";
-
 export const createUser = (username: string, password: string): UserModel => createUserInternal(username, password, false, false);
-export const createAdmin = (adminPass: string) => createUserInternal(adminName, adminPass, true, true);
 
 function createUserInternal(username: string, password: string, enabled: boolean, admin: boolean): UserModel {
     const salt = createSalt();

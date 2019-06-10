@@ -13,6 +13,7 @@ export interface StorageSettings {
     getServer(): string;
     getDatabase(): string;
     getSecret(): string;
+    getAdminName(): string;
     getAdminPass(): string;
 }
 
@@ -69,6 +70,14 @@ export async function initSettings(path: string): Promise<Settings> {
                 throw new Error("No authentication secret is specified for the gateway");
             }
             return secret.value;
+        },
+
+        getAdminName(): string {
+            const adminName: QueryResult | null = querySingle(`${storagePath}/adminname`);
+            if (!adminName) {
+                throw new Error("No admin name is specified for the gateway");
+            }
+            return adminName.value;
         },
 
         getAdminPass(): string {
@@ -144,6 +153,7 @@ const settingsParser = json([
         prop("user", value("string")),
         prop("password", value("string")),
         prop("database", value("string")),
+        prop("adminname", value("string")),
         prop("adminpass", value("string")),
     ])),
 ]);

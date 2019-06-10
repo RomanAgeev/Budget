@@ -47,8 +47,9 @@ process.on("uncaughtException", pino.final(logger, (err, finalLogger) => {
         storage = await initStorage(storageSettings, logger);
 
         const secret: string = storageSettings.getSecret();
+        const adminName: string = storageSettings.getAdminName();
 
-        app.use("/admin", authHandler(secret, true), adminRouter(storage));
+        app.use("/admin", authHandler(secret, true), adminRouter(storage, adminName));
         app.use("/signin", signInRouter(secret, storage));
         app.use("/signup", singUpRouter(storage));
         app.use(authHandler(secret, false));

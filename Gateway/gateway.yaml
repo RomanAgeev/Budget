@@ -16,4 +16,5 @@ storage:
   user: ${GATEWAY_STORAGE_USER-dev}
   password: ${GATEWAY_STORAGE_PASSWORD-dev}
   database: ${GATEWAY_STORAGE_DATABASE-gateway_dev}
+  adminname: __admin__
   adminpass: ${GATEWAY_ADMIN_PASSWORD-dev}
