@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express";
 export type ErrorType = "domain" | "unauthorized" | "forbidden";
 
 export type ErrorCause =
-    "RootUserUpdateOrDelete" |
+    "AdminUpdateOrDelete" |
     "UserAlreadyExists" |
     "InvalidUserCredentials" |
     "UnknownApiEndpoint" |

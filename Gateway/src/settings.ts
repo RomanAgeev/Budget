@@ -13,7 +13,7 @@ export interface StorageSettings {
     getServer(): string;
     getDatabase(): string;
     getSecret(): string;
-    getRootpass(): string;
+    getAdminPass(): string;
 }
 
 export interface RouteParams {
@@ -35,12 +35,24 @@ export async function initSettings(path: string): Promise<Settings> {
 
     const storageSettings: StorageSettings = {
         getServer(): string {
-            const server: QueryResult | null = querySingle(`${storagePath}/server`);
-            if (!server) {
-                throw new Error("gateway storage server is not specified");
+            const host: QueryResult | null = querySingle(`${storagePath}/host`);
+            if (!host) {
+                throw new Error("gateway storage host is not specified");
+            }
+            const user: QueryResult | null = querySingle(`${storagePath}/user`);
+            if (!user) {
+                throw new Error("gateway storage user is not specified");
+            }
+            const password: QueryResult | null = querySingle(`${storagePath}/password`);
+            if (!password) {
+                throw new Error("gateway storage password is not specified");
+            }
+            const database: QueryResult | null = querySingle(`${storagePath}/database`);
+            if (!database) {
+                throw new Error("gateway storage database is not specified");
             }
 
-            return server.value;
+            return `mongodb://${user.value}:${password.value}@${host.value}/${database.value}`;
         },
 
         getDatabase(): string {
@@ -59,12 +71,12 @@ export async function initSettings(path: string): Promise<Settings> {
             return secret.value;
         },
 
-        getRootpass(): string {
-            const rootPassword: QueryResult | null = querySingle(`${storagePath}/rootpass`);
-            if (!rootPassword) {
-                throw new Error("No root password is specified for the gateway");
+        getAdminPass(): string {
+            const adminPassword: QueryResult | null = querySingle(`${storagePath}/adminpass`);
+            if (!adminPassword) {
+                throw new Error("No admin password is specified for the gateway");
             }
-            return rootPassword.value;
+            return adminPassword.value;
         },
     };
 
@@ -128,9 +140,11 @@ const settingsParser = json([
     ])),
     propOptional(storagePath, obj([
         prop("secret", value("string")),
-        prop("server", value("string")),
+        prop("host", value("string")),
+        prop("user", value("string")),
+        prop("password", value("string")),
         prop("database", value("string")),
-        prop("rootpass", value("string")),
+        prop("adminpass", value("string")),
     ])),
 ]);
 

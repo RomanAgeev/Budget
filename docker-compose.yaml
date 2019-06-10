@@ -6,24 +6,18 @@ services:
     container_name: ra_gateway
     ports:
       - 8080:80
+    depends_on:
+      - gateway_db
     environment:
       NODE_ENV: ${ENV_GATEWAY}
+      GATEWAY_SECRET: ${GATEWAY_SECRET}
+      GATEWAY_STORAGE_HOST: gateway_db
+      GATEWAY_STORAGE_DATABASE: gateway_prod
+      GATEWAY_STORAGE_USER: "prod"
+      GATEWAY_STORAGE_PASSWORD: ${GATEWAY_DB_PASSWORD}
+      GATEWAY_ADMIN_PASSWORD: ${GATEWAY_ADMIN_PASSWORD}
       EXPENSES_HOST: http://expenses
-    restart: always
-
-  expenses_db:
-    image: mysql:5.7
-    container_name: ra_expenses_db
-    environment:
-      MYSQL_DATABASE: expenses_prod
-      MYSQL_USER: prod
-      MYSQL_PASSWORD: ${EXPENSES_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${EXPENSES_DB_ROOT_PASSWORD}
-    expose:
-      - 3306
-    volumes:
-      - expenses:/var/lib/mysql
-    restart: always
+    restart: always 
   
   expenses:
     build: Expenses
@@ -39,5 +33,37 @@ services:
       EXPENSES_DB_PASSWORD: ${EXPENSES_DB_PASSWORD}
     restart: always
 
+  gateway_db:
+    image: mongo:4.0.9
+    container_name: rs_gateway_db
+    environment:
+      MONGO_DATABASE: gateway_prod
+      MONGO_USER: prod
+      MONGO_PASSWORD: ${GATEWAY_DB_PASSWORD}
+      MONGO_INITDB_DATABASE: admin
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${GATEWAY_DB_ROOT_PASSWORD}
+    expose:
+      - 27017
+    volumes:
+      - gateway:/data/db
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh
+    restart: always
+
+  expenses_db:
+    image: mysql:5.7
+    container_name: ra_expenses_db
+    environment:
+      MYSQL_DATABASE: expenses_prod
+      MYSQL_USER: prod
+      MYSQL_PASSWORD: ${EXPENSES_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${EXPENSES_DB_ROOT_PASSWORD}
+    expose:
+      - 3306
+    volumes:
+      - expenses:/var/lib/mysql
+    restart: always
+
 volumes:
   expenses:
+  gateway:

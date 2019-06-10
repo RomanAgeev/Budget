@@ -1,4 +1,4 @@
-FROM node:9
+FROM node:9-alpine
 WORKDIR /app
 
 COPY package*.json ./
@@ -7,6 +7,8 @@ COPY .npmrc ./
 RUN npm i
 
 COPY . .
+
+RUN npm test
 
 ENV PORT=80
 

@@ -11,7 +11,9 @@ services:
         service: /api/v1/expense(/:expenseId)
 
 storage:
-  secret: ${BUDGET_GATEWAY_SECRET-dev_secret}
-  server: ${GATEWAY_STORAGE_URI-mongodb://dev:dev@localhost:27017/budget_gateway_dev}
-  database: ${GATEWAY_STORAGE_DB-budget_gateway_dev}
-  rootpass: ${GATEWAY_STORAGE_ROOT_PASSWORD-root_dev}
+  secret: ${BUDGET_GATEWAY_SECRET-dev}
+  host: ${GATEWAY_STORAGE_HOST-localhost:27017}
+  user: ${GATEWAY_STORAGE_USER-dev}
+  password: ${GATEWAY_STORAGE_PASSWORD-dev}
+  database: ${GATEWAY_STORAGE_DATABASE-gateway_dev}
+  adminpass: ${GATEWAY_ADMIN_PASSWORD-dev}

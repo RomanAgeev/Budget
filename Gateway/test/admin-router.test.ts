@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "mocha";
 import * as sinon from "sinon";
-import { UserModel, UserUpdateModel, rootname } from "../src/user-model";
+import { UserModel, UserUpdateModel, adminName } from "../src/user-model";
 import { getUsers, putUser, deleteUser } from "../src/admin-router";
 import { assertOk, assertDomainError, assertInternalError } from "./test-utils";
 
@@ -114,18 +114,18 @@ describe("admin-router", () => {
         assertInternalError(next);
     });
 
-    it("attempt to change 'root' user", async () => {
+    it("attempt to change admin", async () => {
         const storage: any = {
             updateUser: sinon.stub().resolves(true),
         };
 
-        const request: any = { params: { username: rootname }, body: userUpdate };
+        const request: any = { params: { username: adminName }, body: userUpdate };
 
         await putUser(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.updateUser);
 
-        assertDomainError(next, "RootUserUpdateOrDelete");
+        assertDomainError(next, "AdminUpdateOrDelete");
     });
 
 
@@ -189,18 +189,18 @@ describe("admin-router", () => {
         assertInternalError(next);
     });
 
-    it("failed delete root user", async () => {
+    it("failed delete admin", async () => {
         const storage: any = {
             deleteUser: sinon.stub().resolves(true),
         };
 
-        const request: any = { params: { username: rootname } };
+        const request: any = { params: { username: adminName } };
 
         await deleteUser(storage)(request, response, next);
 
         sinon.assert.notCalled(storage.deleteUser);
 
-        assertDomainError(next, "RootUserUpdateOrDelete");
+        assertDomainError(next, "AdminUpdateOrDelete");
     });
 
     it("failed delete user", async () => {

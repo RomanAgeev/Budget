@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { Storage } from "./storage";
-import { UserModel, UserUpdateModel, userViewModel, rootname } from "./user-model";
+import { UserModel, UserUpdateModel, userViewModel, adminName } from "./user-model";
 import { okResult } from "./utils";
 import { NextFunction } from "connect";
 import { body, param } from "express-validator/check";
@@ -40,8 +40,8 @@ export const putUser = (storage: Storage) => async (req: Request, res: Response,
         return;
     }
 
-    if (username === rootname) {
-        next(domainError("RootUserUpdateOrDelete", "it is forbidden to edit root admin"));
+    if (username === adminName) {
+        next(domainError("AdminUpdateOrDelete", "it is forbidden to edit admin"));
         return;
     }
 
@@ -67,8 +67,8 @@ export const deleteUser = (storage: Storage) => async (req: Request, res: Respon
         return;
     }
 
-    if (username === rootname) {
-        next(domainError("RootUserUpdateOrDelete", "it is forbidden to delete root admin"));
+    if (username === adminName) {
+        next(domainError("AdminUpdateOrDelete", "it is forbidden to delete admin"));
         return;
     }
 

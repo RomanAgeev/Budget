@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import { StorageSettings } from "./settings";
-import { UserModel, UserUpdateModel, rootname, createRoot } from "./user-model";
+import { UserModel, UserUpdateModel, adminName, createAdmin } from "./user-model";
 import { Logger } from "pino";
 
 export interface Storage {
@@ -18,12 +18,12 @@ export async function initStorage(settings: StorageSettings, logger: Logger): Pr
 
     const storage: Storage = await openStorage(server, database, logger);
 
-    const root: UserModel | null = await storage.getUser(rootname);
-    if (!root) {
-        const rootpass = settings.getRootpass();
-        const success = await storage.addUser(createRoot(rootpass));
+    const admin: UserModel | null = await storage.getUser(adminName);
+    if (!admin) {
+        const adminpass = settings.getAdminPass();
+        const success = await storage.addUser(createAdmin(adminpass));
         if (!success) {
-            throw new Error("failed to create a root user");
+            throw new Error("failed to create an admin");
         }
     }
 
