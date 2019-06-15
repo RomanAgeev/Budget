@@ -4,9 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "./node_modules/.bin/ts-node ./src/app.ts",
-    "nodemon": "./node_modules/.bin/nodemon",
-    "test": "./node_modules/.bin/mocha -r ts-node/register ./test/**/*.ts"
+    "start": "ts-node ./src/app.ts",
+    "nodemon": "nodemon",
+    "test": "mocha -r ts-node/register ./test/**/*.ts"
   },
   "author": "Roman Ageev",
   "license": "ISC",
