@@ -1,3 +1,5 @@
 [@react.component]
-let make = () =>
-    <h1> { ReasonReact.string("Hello from reason react !") }</h1>;
+let make = () =>    
+    <a className="waves-effect waves-light btn">
+        "Hello from reason react !" -> ReasonReact.string
+    </a>
