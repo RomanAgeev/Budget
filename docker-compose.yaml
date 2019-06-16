@@ -1,13 +1,24 @@
 version: '3'
 services:
+  budget:
+    build: Web
+    image: ra/budget:0.0.1
+    container_name: ra_budget
+    ports:
+      - 8080:80
+    depends_on:
+      - gateway
+    restart: always
+
   gateway:
     build: Gateway
     image: ra/gateway:0.0.1
     container_name: ra_gateway
-    ports:
-      - 8080:80
     depends_on:
       - gateway_db
+      - expenses
+    expose:
+      - 80
     environment:
       NODE_ENV: ${ENV_GATEWAY}
       GATEWAY_SECRET: ${GATEWAY_SECRET}
@@ -24,7 +35,6 @@ services:
     image: ra/expenses:0.0.1
     container_name: ra_expenses
     depends_on:
-      - gateway
       - expenses_db
     expose:
       - 80
@@ -35,7 +45,7 @@ services:
 
   gateway_db:
     image: mongo:4.0.9
-    container_name: rs_gateway_db
+    container_name: ra_gateway_db
     environment:
       MONGO_DATABASE: gateway_prod
       MONGO_USER: prod
