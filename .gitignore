@@ -7,3 +7,4 @@ node_modules
 **/lib/bs
 .merlin
 **/*.bs.js
+Web/server/public

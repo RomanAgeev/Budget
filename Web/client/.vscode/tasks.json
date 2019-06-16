@@ -6,7 +6,6 @@
         {
             "type": "npm",
             "script": "parcel:production",
-            "path": "client/",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
