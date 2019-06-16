@@ -10,6 +10,19 @@ let make = () => {
     let onPasswordChange = event => target(event)##value -> setPassword;
     let onPasswordRepeatChange = event => target(event)##value -> setPasswordRepeat;
 
+    React.useEffect(() => {
+        open Webapi.Dom;
+
+        document
+            |> Document.getElementsByTagName("title")
+            |> HtmlCollection.item(0)
+            |> item => switch (item) {
+                | Some(title) => Element.setInnerText(title, username)
+                | None => ()
+            };
+            None;
+    });
+
     <div className="row">
         <form className="col s12">
             <div className="row">

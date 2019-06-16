@@ -14,7 +14,8 @@
     "react-jsx": 3
   },
   "bs-dependencies": [
-    "reason-react"
+    "reason-react",
+    "bs-webapi"
   ],
   "warnings": {
     "error" : "+101"
