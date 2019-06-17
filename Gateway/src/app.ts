@@ -1,6 +1,7 @@
 import * as express from "express";
 import { Express } from "express";
 import { Server } from "http";
+import * as cors from "cors";
 import * as bodyParser from "body-parser";
 import * as path from "path";
 import * as pino from "pino";
@@ -34,6 +35,7 @@ process.on("uncaughtException", pino.final(logger, (err, finalLogger) => {
 (async () => {
     const app: Express = express();
 
+    app.use(cors());
     app.use(bodyParser.urlencoded({ extended: false }));
     app.use(bodyParser.json());
     app.use(loggerHandler(logger));
