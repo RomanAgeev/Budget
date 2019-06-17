@@ -1,3 +1,12 @@
+let paylodSignUp = (~username: string, ~password: string) => {
+    open Js;
+
+    let payload = Dict.empty();
+        Dict.set(payload, "username", Json.string(username));
+        Dict.set(payload, "password", Json.string(password));
+        Json.object_(payload);
+};
+
 [@react.component]
 let make = () => {
     open ReactEvent.Form;
@@ -10,6 +19,30 @@ let make = () => {
     let onPasswordChange = event => target(event)##value -> setPassword;
     let onPasswordRepeatChange = event => target(event)##value -> setPasswordRepeat;
 
+    let onSubmit = event => {
+        open Fetch;
+        open Js;
+        
+        ReactEvent.Mouse.preventDefault(event);
+
+        let body = paylodSignUp(~username, ~password)
+            |> Json.stringify
+            |> BodyInit.make;
+
+        let headers = { "Content-Type": "application/json" }
+            |> HeadersInit.make;
+
+        let request = fetchWithInit(
+            "http://localhost:3000/signup",
+            RequestInit.make(~method_ = Post, ~body, ~headers, ())
+        );
+        
+        let _ = Promise.(request
+            |> then_(res => Response.ok(res) -> resolve)
+        );
+    };
+
+    // TODO: remove
     React.useEffect(() => {
         open Webapi.Dom;
 
@@ -48,6 +81,11 @@ let make = () => {
                         { ReasonReact.string("Repeat Password") }
                     </label>
                 </div>
+            </div>
+            <div className="row">
+                <button className="btn waves-effect waves-light" type_="submit" onClick={ onSubmit }>
+                    { ReasonReact.string("Submit") }
+                </button>
             </div>
         </form>
         { ReasonReact.string(username) }
