@@ -19,6 +19,7 @@
     "parcel-bundler": "^1.12.3"
   },
   "dependencies": {
+    "@glennsl/bs-json": "^4.0.0",
     "bs-fetch": "^0.4.0",
     "bs-webapi": "^0.15.2",
     "materialize-css": "^1.0.0",

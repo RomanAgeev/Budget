@@ -1,10 +1,29 @@
-let paylodSignUp = (~username: string, ~password: string) => {
-    open Js;
+let signUpJson = (~username: string, ~password: string) =>
+    Json_encode.(
+        object_([
+            ("username", string(username)),
+            ("password", string(password)),
+        ])
+    );
 
-    let payload = Dict.empty();
-        Dict.set(payload, "username", Json.string(username));
-        Dict.set(payload, "password", Json.string(password));
-        Json.object_(payload);
+let singUpPost = (~username: string, ~password: string) => {
+    open Fetch;
+    
+    let body = signUpJson(~username, ~password)
+        |> Json.stringify
+        |> BodyInit.make;
+
+    let headers = { "Content-Type": "application/json" }
+        |> HeadersInit.make;
+
+    let request = fetchWithInit(
+        "http://localhost:3000/signup",
+        RequestInit.make(~method_ = Post, ~body, ~headers, ())
+    );
+    
+    Js.Promise.(request
+        |> then_(res => Response.ok(res) -> resolve)
+    );
 };
 
 [@react.component]
@@ -14,47 +33,31 @@ let make = () => {
     let (username, setUsername) = React.useState(() => "");
     let (password, setPassword) = React.useState(() => "");
     let (passwordRepeat, setPasswordRepeat) = React.useState(() => "");
+    let (signedUp, setSignedUp) = React.useState(() => false);
 
-    let onUsenameChange = event => target(event)##value -> setUsername;
-    let onPasswordChange = event => target(event)##value -> setPassword;
-    let onPasswordRepeatChange = event => target(event)##value -> setPasswordRepeat;
-
-    let onSubmit = event => {
-        open Fetch;
-        open Js;
-        
-        ReactEvent.Mouse.preventDefault(event);
-
-        let body = paylodSignUp(~username, ~password)
-            |> Json.stringify
-            |> BodyInit.make;
-
-        let headers = { "Content-Type": "application/json" }
-            |> HeadersInit.make;
-
-        let request = fetchWithInit(
-            "http://localhost:3000/signup",
-            RequestInit.make(~method_ = Post, ~body, ~headers, ())
-        );
-        
-        let _ = Promise.(request
-            |> then_(res => Response.ok(res) -> resolve)
-        );
+    let onUsenameChange = event => {
+        let value = target(event)##value;
+        setUsername(_ => value);
+    };
+    let onPasswordChange = event => {
+        let value = target(event)##value;
+        setPassword(_ => value);
+    };
+    let onPasswordRepeatChange = event => {
+        let value = target(event)##value;
+        setPasswordRepeat(_ => value)
     };
 
-    // TODO: remove
-    React.useEffect(() => {
-        open Webapi.Dom;
+    let onSubmit = event => {
+        ReactEvent.Mouse.preventDefault(event);
 
-        document
-            |> Document.getElementsByTagName("title")
-            |> HtmlCollection.item(0)
-            |> item => switch (item) {
-                | Some(title) => Element.setInnerText(title, username)
-                | None => ()
-            };
-            None;
-    });
+        let _ = Js.Promise.(singUpPost(~username, ~password)
+            |> then_(success => {
+                setSignedUp(_ => success);
+                resolve(());
+            })
+        );
+    };
 
     <div className="row">
         <form className="col s12">
@@ -88,10 +91,6 @@ let make = () => {
                 </button>
             </div>
         </form>
-        { ReasonReact.string(username) }
-        <br/>
-        { ReasonReact.string(password) }
-        <br/>
-        { ReasonReact.string(passwordRepeat) }
-    </div>;
+        { ReasonReact.string(signedUp ? "Signed Up" : "Not Yet") }
+    </div>
 };
